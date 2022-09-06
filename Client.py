@@ -426,20 +426,16 @@ class GuiWindow(wx.Frame):
 
         if self.role == "listener":
             if self.swap:
-                # print("Ooh, swapping from listener now...")
                 self.role = "speaker"
                 self.submitted_message = {"msg":"next round"}
                 message_panel = MessagePanel(self, msg, "OK")
             else:
-                # print("Not swapping from listener...")
                 message_panel = MessagePanel(self,msg)
         elif self.role == "speaker":
             if self.swap:
-                # print("Ooh, swapping from speaker now...")
                 self.role = "listener"
                 message_panel = MessagePanel(self,msg)
             else:
-                # print("Not swapping from speaker...")
                 self.submitted_message = {"msg":"next round"}
                 message_panel = MessagePanel(self, msg, "OK")
 
