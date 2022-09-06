@@ -1,0 +1,9 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jan_11_22-18_23_08 | 6666INFOplayer16666
+Jan_11_22-18_23_18 | 6666INFOplayer26666

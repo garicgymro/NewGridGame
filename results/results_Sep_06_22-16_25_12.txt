@@ -1,0 +1,14 @@
+Referent list:
+['Dog', 'Pet', 'Animal', 'Ice cream', 'Dessert', 'Daisy', 'Flower', 'Plant', 'Apple', 'Fruit', 'Book', 'Novel']
+Condition:
+{'substitute': True, 'noise': (0.2, 0.25)}
+Substitution parameters:
+{'max_unique': 1, 'num_substitutions': 1, 'min_interval': 1, 'threshold': 0.75, 'num_previous_instances': 4, 'substitution_noise_combine': False}
+Time per round:
+40
+Sep_06_22-16_25_15 | {"msg":"info","name":"bdf"}
+Sep_06_22-16_25_19 | {"msg":"info","name":"fdsg"}
+Sep_06_22-16_25_20 | {"msg":"survey completed","name":"fdsg","survey answers":"Languages spoken: none given, Favorite Pokemon: , Favourite Pokemon: none given"}
+Sep_06_22-16_25_23 | {"msg":"survey completed","name":"bdf","survey answers":"Languages spoken: none given, Favorite Pokemon: , Favourite Pokemon: none given"}
+Sep_06_22-16_25_24 | {"msg":"instructions read","name":"bdf"}
+Sep_06_22-16_25_26 | {"msg":"instructions read","name":"fdsg"}

@@ -1,0 +1,39 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jan_14_22-21_23_32 | 6666INFOplayer16666
+Jan_14_22-21_23_39 | 6666INFOplayer26666
+Jan_14_22-21_23_43 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Jan_14_22-21_23_45 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Jan_14_22-21_23_47 | 6666INSTRUCTIONSREAD@player2@6666
+Jan_14_22-21_23_48 | 6666INSTRUCTIONSREAD@player1@6666
+Jan_14_22-21_23_48 | 6666image-8a.png|||image-7a.png6666
+Jan_14_22-21_23_48 | 6666PICimage-8a.png@player1@6666
+Jan_14_22-21_23_49 | 6666FIRSTCLICK6666
+Jan_14_22-21_23_49 | 6666(3, 1)6666
+Jan_14_22-21_23_49 | 6666(3, 3)6666
+Jan_14_22-21_23_50 | 6666(2, 3)6666
+Jan_14_22-21_23_51 | 6666(2, 1)6666
+Jan_14_22-21_23_51 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@6666
+Jan_14_22-21_23_54 | 6666GUESSimage-8a.png@player2@6666
+Jan_14_22-21_23_56 | 6666NEXTROUND6666
+Jan_14_22-21_23_56 | 6666image-1b.png|||image-1a.png6666
+Jan_14_22-21_23_56 | 6666PICimage-1b.png@player2@6666
+Jan_14_22-21_23_57 | 6666FIRSTCLICK6666
+Jan_14_22-21_23_57 | 6666(2, 0)6666
+Jan_14_22-21_23_58 | 6666(2, 0)6666
+Jan_14_22-21_23_59 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player2@6666
+Jan_14_22-21_24_01 | 6666GUESSimage-1b.png@player1@6666
+Jan_14_22-21_24_03 | 6666NEXTROUND6666
+Jan_14_22-21_24_04 | 6666READYTOSTARTPROPERROUNDS@player2@6666
+Jan_14_22-21_24_05 | 6666READYTOSTARTPROPERROUNDS@player1@6666
+Jan_14_22-21_24_05 | 6666image-7b.png|||image-7c.png6666
+Jan_14_22-21_24_05 | 6666PICimage-7b.png@player1@6666
+Jan_14_22-21_24_06 | 6666FIRSTCLICK6666
+Jan_14_22-21_24_06 | 6666(3, 2)6666
+Jan_14_22-21_24_07 | 6666(4, 1)6666
+Jan_14_22-21_24_07 | 6666(3, 3)6666

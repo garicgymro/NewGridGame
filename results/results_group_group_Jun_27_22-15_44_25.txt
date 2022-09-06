@@ -1,0 +1,14 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_27_22-15_44_27 | 6666INFOg6666
+Jun_27_22-15_44_30 | 6666INFOg6666
+Jun_27_22-15_44_32 | 6666SURVEYCOMPLETED@g@Native language: none given, Main area of study: none given@6666
+Jun_27_22-15_44_34 | 6666SURVEYCOMPLETED@g@Native language: none given, Main area of study: none given@6666
+Jun_27_22-15_44_35 | 6666INSTRUCTIONSREAD@g@6666
+Jun_27_22-15_44_37 | 6666INSTRUCTIONSREAD@g@6666
+Jun_27_22-15_44_41 | 6666COORD[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@g@Book@6666

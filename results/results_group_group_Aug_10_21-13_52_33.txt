@@ -1,0 +1,29 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 5
+Gradual cell filling: False
+Aug_10_21-13_52_37 | 6666INFOfds6666
+Aug_10_21-13_52_44 | 6666INFOfg6666
+Aug_10_21-13_52_47 | 6666SURVEYCOMPLETED@fg@Native language: gfd, Main area of study: gdf@6666
+Aug_10_21-13_52_51 | 6666SURVEYCOMPLETED@fds@Native language: f, Main area of study: dg@6666
+Aug_10_21-13_52_52 | 6666INSTRUCTIONSREAD@fds@6666
+Aug_10_21-13_52_55 | 6666INSTRUCTIONSREAD@fg@6666
+Aug_10_21-13_52_55 | 6666image-7a.png|||image-8a.png6666
+Aug_10_21-13_52_55 | 6666PICimage-7a.png@fds@6666
+Aug_10_21-13_52_57 | 6666FIRSTCLICK6666
+Aug_10_21-13_52_57 | 6666(0, 0)6666
+Aug_10_21-13_52_57 | 6666(0, 0)6666
+Aug_10_21-13_52_57 | 6666(0, 0)6666
+Aug_10_21-13_52_58 | 6666(0, 0)6666
+Aug_10_21-13_52_58 | 6666(0, 0)6666
+Aug_10_21-13_52_58 | 6666(0, 0)6666
+Aug_10_21-13_52_58 | 6666(0, 0)6666
+Aug_10_21-13_53_03 | 6666(4, 2)6666
+Aug_10_21-13_53_03 | 6666(4, 2)6666
+Aug_10_21-13_53_04 | 6666(4, 2)6666
+Aug_10_21-13_53_19 | 6666(4, 2)6666
+Aug_10_21-13_53_22 | 6666(6, 6)6666
+Aug_10_21-13_53_27 | 6666COORD[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@fds@6666

@@ -1,0 +1,21 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_08_22-13_27_42 | 6666INFOplayer16666
+Feb_08_22-13_27_48 | 6666INFOplayer26666
+Feb_08_22-13_27_58 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_08_22-13_27_59 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_08_22-13_28_00 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_08_22-13_28_01 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_08_22-13_28_01 | 6666image-1a.png|||image-1b.png6666
+Feb_08_22-13_28_01 | 6666PICimage-1a.png@player1@6666
+Feb_08_22-13_28_03 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@Daisy@6666
+Feb_08_22-13_28_05 | 6666GUESSPet@player2@6666
+Feb_08_22-13_28_06 | 6666NEXTROUND6666
+Feb_08_22-13_28_06 | 6666image-1c.png|||image-1b.png6666
+Feb_08_22-13_28_06 | 6666PICimage-1c.png@player2@6666
+Feb_08_22-13_28_47 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player2@Animal@6666

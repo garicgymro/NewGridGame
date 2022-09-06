@@ -1,0 +1,191 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jan_30_22-20_51_48 | 6666INFOplayer16666
+Jan_30_22-20_51_56 | 6666INFOplayer26666
+Jan_30_22-20_51_59 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Jan_30_22-20_52_00 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Jan_30_22-20_52_01 | 6666INSTRUCTIONSREAD@player2@6666
+Jan_30_22-20_52_02 | 6666INSTRUCTIONSREAD@player1@6666
+Jan_30_22-20_52_02 | 6666image-7a.png|||image-8a.png6666
+Jan_30_22-20_52_02 | 6666PICimage-7a.png@player1@6666
+Jan_30_22-20_52_04 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Jan_30_22-20_52_06 | 6666GUESS@player2@6666
+Jan_30_22-20_57_37 | 6666NEXTROUND6666
+Jan_30_22-20_57_37 | 6666image-1a.png|||image-1b.png6666
+Jan_30_22-20_57_37 | 6666PICimage-1a.png@player2@6666
+Jan_30_22-20_57_39 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]@player2@@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-12_23_08 | 6666INFOplayer16666
+Feb_06_22-12_23_20 | 6666INFOplayer26666
+Feb_06_22-12_23_25 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-12_23_27 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-12_23_28 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-12_23_30 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-12_23_30 | 6666image-8a.png|||image-7a.png6666
+Feb_06_22-12_23_30 | 6666PICimage-8a.png@player1@6666
+Feb_06_22-12_23_32 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Feb_06_22-12_23_35 | 6666GUESS@player2@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-16_02_32 | 6666INFOplayer16666
+Feb_06_22-16_02_38 | 6666INFOplayer26666
+Feb_06_22-16_02_44 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_02_45 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_02_46 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-16_02_47 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-16_02_47 | 6666image-8a.png|||image-7a.png6666
+Feb_06_22-16_02_47 | 6666PICimage-8a.png@player1@6666
+Feb_06_22-16_02_50 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Feb_06_22-16_02_58 | 6666GUESSimage-8a.png@player2@6666
+Feb_06_22-16_03_15 | 6666NEXTROUND6666
+Feb_06_22-16_03_15 | 6666image-1b.png|||image-1a.png6666
+Feb_06_22-16_03_15 | 6666PICimage-1b.png@player2@6666
+Feb_06_22-16_12_25 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player2@@6666
+Feb_06_22-16_15_01 | 6666GUESS@player1@6666
+Feb_06_22-16_15_02 | 6666NEXTROUND6666
+Feb_06_22-16_15_03 | 6666READYTOSTARTPROPERROUNDS@player2@6666
+Feb_06_22-16_15_05 | 6666READYTOSTARTPROPERROUNDS@player1@6666
+Feb_06_22-16_15_05 | 6666image-8c.png|||image-8a.png6666
+Feb_06_22-16_15_05 | 6666PICimage-8c.png@player1@6666
+Feb_06_22-16_17_18 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Feb_06_22-16_17_30 | 6666GUESSimage-8a.png@player2@6666
+Feb_06_22-16_17_31 | 6666NEXTROUND6666
+Feb_06_22-16_17_31 | 6666image-8a.png|||image-8b.png6666
+Feb_06_22-16_17_31 | 6666PICimage-8a.png@player2@6666
+Feb_06_22-16_17_34 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player2@@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-16_21_28 | 6666INFOplayer16666
+Feb_06_22-16_21_34 | 6666INFOplayer26666
+Feb_06_22-16_21_44 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_21_45 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_21_46 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-16_21_47 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-16_21_47 | 6666image-8a.png|||image-7a.png6666
+Feb_06_22-16_21_47 | 6666PICimage-8a.png@player1@6666
+Feb_06_22-16_21_48 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-16_29_11 | 6666INFOplayer16666
+Feb_06_22-16_29_16 | 6666INFOplayer26666
+Feb_06_22-16_29_22 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_29_22 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_29_23 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-16_29_24 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-16_29_24 | 6666image-8a.png|||image-7a.png6666
+Feb_06_22-16_29_24 | 6666PICimage-8a.png@player1@6666
+Feb_06_22-16_29_26 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Feb_06_22-16_29_28 | 6666GUESSimage-7a.png@player2@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-16_31_16 | 6666INFOplayer16666
+Feb_06_22-16_31_23 | 6666INFOplayer26666
+Feb_06_22-16_31_28 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_31_30 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_31_32 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-16_31_32 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-16_31_32 | 6666image-8a.png|||image-7a.png6666
+Feb_06_22-16_31_32 | 6666PICimage-8a.png@player1@6666
+Feb_06_22-16_31_35 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]@player1@@6666
+Feb_06_22-16_31_37 | 6666GUESSimage-7a.png@player2@6666
+Feb_06_22-16_31_39 | 6666NEXTROUND6666
+Feb_06_22-16_31_39 | 6666image-1a.png|||image-1b.png6666
+Feb_06_22-16_31_39 | 6666PICimage-1a.png@player2@6666
+Feb_06_22-16_31_41 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player2@@6666
+Feb_06_22-16_31_42 | 6666GUESSimage-1b.png@player1@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-16_33_56 | 6666INFOplayer16666
+Feb_06_22-16_34_03 | 6666INFOplayer26666
+Feb_06_22-16_34_07 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_34_07 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_34_09 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-16_34_10 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-16_34_10 | 6666image-8a.png|||image-7a.png6666
+Feb_06_22-16_34_10 | 6666PICimage-8a.png@player1@6666
+Feb_06_22-16_34_12 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Feb_06_22-16_34_13 | 6666GUESS@player2@6666
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Feb_06_22-16_36_15 | 6666INFOplayer16666
+Feb_06_22-16_36_22 | 6666INFOplayer26666
+Feb_06_22-16_36_27 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_36_28 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Feb_06_22-16_36_28 | 6666INSTRUCTIONSREAD@player2@6666
+Feb_06_22-16_36_29 | 6666INSTRUCTIONSREAD@player1@6666
+Feb_06_22-16_36_29 | 6666image-1b.png|||image-1a.png6666
+Feb_06_22-16_36_29 | 6666PICimage-1b.png@player1@6666
+Feb_06_22-16_36_31 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@@6666
+Feb_06_22-16_36_33 | 6666GUESSimage-1a.png@player2@6666
+Feb_06_22-16_36_35 | 6666NEXTROUND6666
+Feb_06_22-16_36_35 | 6666image-1c.png|||image-1b.png6666
+Feb_06_22-16_36_35 | 6666PICimage-1c.png@player2@6666

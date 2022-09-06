@@ -1,0 +1,18 @@
+You live in a galaxy far far away. Along with your partner, located on a separate planet, you are responsible for coordinating traffic through your solar system. Part of this work involves making sure that the correct route-maps are provided to cargo-ships. Unfortunately, there has been a system failure! Some of your partner’s route-maps have got confused with each other. Luckily, you have the information to put your partner right. But your communication system is also failing and you don’t have much time. You will have to communicate quickly to each other to help choose the correct route maps.
+
+You’re going to be playing a simple game with a partner. The game consists of a series of rounds, in each of which you will take the role of sender while your partner will take the role of receiver. 
+
+At the start of a round you will see two route-maps, each of which looks like a line figure drawn over a grid of squares. One of them will be highlighted in green. Next to these two maps will be an empty grid. Your job as sender is to communicate to the receiver which of the two maps is highlighted in green by filling in squares in the empty grid. It’s up to you which squares to fill and how many, but there are two important things to keep in mind:
+
+1. The system failure has left you with a very limited communication channel. To have a square of the grid count as filled you have to click on that square %s times. Then it will turn black. YOU MUST CLICK ON IT ENOUGH TIMES TO FILL IT. There is no such thing as partially filling a square on the grid.
+
+2. You have limited time. From the moment you click inside a square on the grid, you will have only %s seconds before their turn is up. ONCE THE TIME IS UP NO MORE SQUARES CAN BE 
+FILLED. The message has to be sent in time, or spacecraft will collide. 
+
+Once your turn as sender is over, your partner will be presented with your completed grid along with the same two maps (though not necessarily in the same order). Their task as receiver is to choose which of the two maps you were trying to convey. 
+
+If your partner chooses correctly, you both score one point. Then a new round will begin.
+
+At the end of the game, if you were successful on at least 80 percent of rounds, you will win a prize in recognition of your good work under trying circumstances. If you score below 80 percent, you’ll lose your prestigious jobs and have to go back to cleaning cargo-holds.
+
+Please make sure that you’ve read all instructions carefully before proceeding. Let the researcher know if you have any questions.

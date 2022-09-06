@@ -1,0 +1,16 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 5
+Gradual cell filling: False
+Aug_10_21-17_10_06 | 6666INFOfda6666
+Aug_10_21-17_10_18 | 6666INFOcsfgd6666
+Aug_10_21-17_10_22 | 6666SURVEYCOMPLETED@csfgd@Native language: fw, Main area of study: dfs@6666
+Aug_10_21-17_10_28 | 6666SURVEYCOMPLETED@fda@Native language: gfd, Main area of study: fgds@6666
+Aug_10_21-17_10_29 | 6666INSTRUCTIONSREAD@fda@6666
+Aug_10_21-17_10_30 | 6666INSTRUCTIONSREAD@csfgd@6666
+Aug_10_21-17_10_30 | 6666image-7a.png|||image-8a.png6666
+Aug_10_21-17_10_30 | 6666PICimage-7a.png@fda@6666
+Aug_10_21-17_10_33 | 6666FIRSTCLICK6666

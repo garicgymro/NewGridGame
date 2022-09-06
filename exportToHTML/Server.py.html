@@ -1,0 +1,945 @@
+<html>
+<head>
+<title>Server.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #1750eb;}
+.s5 { color: #0037a6;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Server.py</font>
+</center></td></tr></table>
+<pre><span class="s0">#!/usr/bin/python</span>
+<span class="s0"># -*- coding: utf-8 -*-</span>
+
+<span class="s0">&quot;&quot;&quot; 
+Contains the classes Player, Server, Srvr, Gui and ListenForClients. 
+ 
+title           :Server.py 
+description     :Server software 
+author          :Gareth Roberts, Department of Linguistics, 
+                 University of Pennsylvania 
+                 Adapted for ZAS Berlin by Lisa Raithel and Jon Stevens 
+usage           :python run_server.py 
+notes           :Requires installation of wxPython 
+python_version  :2.7.7 
+&quot;&quot;&quot;</span>
+
+<span class="s2">from </span><span class="s1">__future__ </span><span class="s2">import </span><span class="s1">unicode_literals</span>
+
+<span class="s2">import </span><span class="s1">codecs</span>
+<span class="s2">import </span><span class="s1">collections</span>
+<span class="s2">import </span><span class="s1">csv</span>
+<span class="s2">import </span><span class="s1">datetime</span>
+<span class="s2">import </span><span class="s1">json</span>
+<span class="s2">import </span><span class="s1">os</span>
+<span class="s2">import </span><span class="s1">random</span>
+<span class="s2">import </span><span class="s1">re</span>
+<span class="s2">import </span><span class="s1">socket</span>
+<span class="s2">import </span><span class="s1">sys</span>
+<span class="s2">import </span><span class="s1">threading</span>
+<span class="s2">import </span><span class="s1">time</span>
+
+<span class="s2">from </span><span class="s1">parameter_reader </span><span class="s2">import </span><span class="s1">Parameters</span>
+
+<span class="s2">try</span><span class="s1">:</span>
+    <span class="s2">import </span><span class="s1">wx</span>
+<span class="s2">except </span><span class="s1">ImportError:</span>
+    <span class="s2">raise </span><span class="s1">ImportError(</span><span class="s3">&quot;The wxPython module is required to run this program&quot;</span><span class="s1">)</span>
+
+<span class="s0"># you need this one to shut down the server and clients correctly</span>
+<span class="s0"># from wx.lib.pubsub import pub</span>
+<span class="s0"># from wx.lib.pubsub import setupkwargs</span>
+<span class="s2">from </span><span class="s1">pubsub </span><span class="s2">import </span><span class="s1">pub </span>
+<span class="s0"># from pubsub import setupkwargs</span>
+
+<span class="s2">import </span><span class="s1">wx.richtext </span><span class="s2">as </span><span class="s1">rt</span>
+
+
+<span class="s2">class </span><span class="s1">Player():</span>
+    <span class="s0">&quot;&quot;&quot;Class for the player instance.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, clnt, gui, srvr):</span>
+        <span class="s0">&quot;&quot;&quot;The internal representation of a player. 
+ 
+        Connects GUI, server and clients and saves 
+        the player's real and fake name. 
+ 
+        :param clnt: 
+        :type clnt: 
+        :param gui: 
+        :type gui: 
+        :param srvr: 
+        :type svrv: 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self.clnt = clnt</span>
+        <span class="s1">self.gui = gui</span>
+        <span class="s1">self.srvr = srvr</span>
+        <span class="s1">self.realname = </span><span class="s3">&quot;?&quot;</span>
+        <span class="s1">self.fakename = </span><span class="s3">&quot;?&quot;</span>
+        <span class="s0"># for what do I need those two?</span>
+        <span class="s1">self.action = </span><span class="s3">&quot;?&quot;</span>
+        <span class="s1">self.index = </span><span class="s4">9999</span>
+
+
+<span class="s2">class </span><span class="s1">Gui(wx.Frame):</span>
+    <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent, id, title, gui_show, nclnts,</span>
+                 <span class="s1">practice_rounds_config, proper_rounds_config, csv_header,</span>
+                 <span class="s1">group_name, images_path, results_path,</span>
+                 <span class="s1">randomization, hard_mode, swapping, time_per_round, no_of_clicks):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.bufsize = </span><span class="s4">4096</span>
+        <span class="s0"># host = socket.gethostname()</span>
+        <span class="s1">self.host = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.port = </span><span class="s4">5000</span>
+
+        <span class="s0">#These settings are a legacy of the old experiment. They're set in run_server.py, which sets these parameters when it calls Server.py</span>
+        <span class="s1">self.randomization = randomization</span>
+        <span class="s1">self.hard_mode = hard_mode</span>
+        <span class="s1">self.swapping = swapping</span>
+        <span class="s1">self.time_per_round = time_per_round</span>
+        <span class="s1">self.no_of_clicks = no_of_clicks</span>
+        <span class="s1">print(</span><span class="s3">&quot;self.randomization = &quot;</span><span class="s1">, self.randomization)</span>
+        <span class="s1">print(</span><span class="s3">&quot;self.hard_mode = &quot;</span><span class="s1">, self.hard_mode)</span>
+        <span class="s1">print(</span><span class="s3">&quot;time per round = &quot;</span><span class="s1">, self.time_per_round)</span>
+        <span class="s1">print(</span><span class="s3">&quot;no_of_clicks per button = &quot;</span><span class="s1">, self.no_of_clicks)</span>
+
+        <span class="s1">self.images_path = images_path</span>
+
+        <span class="s1">self.num_practice_rounds = len(practice_rounds_config)</span>
+        <span class="s1">self.practice_rounds_config = practice_rounds_config</span>
+        <span class="s1">self.current_practice_config = {}</span>
+        <span class="s0"># This must be the same as in the Server script</span>
+        <span class="s1">self.server_end_marker = </span><span class="s3">&quot;!!!%%%&amp;&amp;&amp;!!!&quot;</span>
+        <span class="s1">self.allconnected = </span><span class="s4">0</span>
+        <span class="s1">self.guilock = threading.Lock()</span>
+        <span class="s1">self.results_dir = results_path</span>
+        <span class="s1">print(</span><span class="s3">&quot;self.results_dir = &quot;</span><span class="s1">, self.results_dir)</span>
+        <span class="s0"># is the results directory does not exist already, build it</span>
+        <span class="s2">if not </span><span class="s1">os.path.exists(self.results_dir):</span>
+            <span class="s1">print(</span><span class="s3">&quot;creating results directory&quot;</span><span class="s1">)</span>
+            <span class="s1">os.makedirs(self.results_dir)</span>
+
+        <span class="s0">#threads allow processes to run in parallel</span>
+        <span class="s1">self.threads = []</span>
+        <span class="s1">self.realnames = []</span>
+        <span class="s1">self.header = csv_header</span>
+        <span class="s1">self.nclnts = nclnts</span>
+        <span class="s1">self.proband_group_name = group_name        </span>
+        
+        <span class="s0"># get parameters from parameter file:</span>
+        <span class="s1">self.parameters_for_proper_rounds = proper_rounds_config</span>
+        
+        <span class="s1">file_name = (</span><span class="s3">&quot;results_group_&quot; </span><span class="s1">+ self.proband_group_name + </span><span class="s3">&quot;.txt&quot;</span><span class="s1">)</span>
+        <span class="s1">file_path = os.path.join(self.results_dir,file_name)</span>
+        <span class="s1">f = open(file_path,</span><span class="s3">&quot;a&quot;</span><span class="s1">)</span>
+        <span class="s1">f.write(</span><span class="s3">&quot;Parameters:</span><span class="s5">\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+        <span class="s1">parameter_line = (</span><span class="s3">&quot;Swapping: &quot; </span><span class="s1">+ str(self.swapping)</span>
+                          <span class="s1">+ </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">Randomization: &quot; </span><span class="s1">+ str(self.randomization)</span>
+                          <span class="s1">+ </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">Time per round: &quot; </span><span class="s1">+ str(self.time_per_round)</span>
+                          <span class="s1">+ </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">Hard mode: &quot; </span><span class="s1">+ str(self.hard_mode)</span>
+                          <span class="s1">+ </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">Number of clicks: &quot; </span><span class="s1">+ str(self.no_of_clicks)</span>
+                          <span class="s1">+ </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">Gradual cell filling: False</span><span class="s5">\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+        <span class="s1">f.write(parameter_line)</span>
+        <span class="s1">f.close()</span>
+        
+        <span class="s1">self.num_of_rounds = len(self.parameters_for_proper_rounds)</span>
+
+        <span class="s0"># change this if you want 2 or 4 participants</span>
+        <span class="s2">if </span><span class="s1">self.nclnts == </span><span class="s4">2</span><span class="s1">:</span>
+            <span class="s1">self.fakenames = [</span><span class="s3">&quot;thor&quot;</span><span class="s1">, </span><span class="s3">&quot;freya&quot;</span><span class="s1">]</span>
+            <span class="s1">self.listener = </span><span class="s2">None</span>
+            <span class="s1">self.speaker = </span><span class="s2">None</span>
+            <span class="s1">self.roles = [</span><span class="s3">&quot;listener&quot;</span><span class="s1">, </span><span class="s3">&quot;speaker&quot;</span><span class="s1">]</span>
+            <span class="s1">self.key = </span><span class="s3">&quot;&quot;</span>
+
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.fakenames = [</span><span class="s3">&quot;thor&quot;</span><span class="s1">, </span><span class="s3">&quot;freya&quot;</span><span class="s1">, </span><span class="s3">&quot;loki&quot;</span><span class="s1">, </span><span class="s3">&quot;odin&quot;</span><span class="s1">]</span>
+            <span class="s1">self.listener_1 = </span><span class="s2">None</span>
+            <span class="s1">self.listener_2 = </span><span class="s2">None</span>
+            <span class="s1">self.speaker_1 = </span><span class="s2">None</span>
+            <span class="s1">self.speaker_2 = </span><span class="s2">None</span>
+            <span class="s1">self.roles = [</span><span class="s3">&quot;listener_1&quot;</span><span class="s1">, </span><span class="s3">&quot;speaker_1&quot;</span><span class="s1">, </span><span class="s3">&quot;listener_2&quot;</span><span class="s1">, </span><span class="s3">&quot;speaker_2&quot;</span><span class="s1">]</span>
+            <span class="s1">self.key_1 = </span><span class="s3">&quot;&quot;</span>
+            <span class="s1">self.key_2 = </span><span class="s3">&quot;&quot;</span>
+
+        <span class="s1">self.speaker_no = </span><span class="s4">30</span>
+        <span class="s1">self.listener_no = </span><span class="s4">60</span>
+
+        <span class="s1">self.survey_answers = {}</span>
+        <span class="s1">self.players = {}</span>
+        <span class="s1">self.playerlist = []</span>
+        <span class="s1">self.gui_show = gui_show</span>
+        <span class="s1">self.finish = </span><span class="s4">0</span>
+        <span class="s1">self.timestamp_format = </span><span class="s3">&quot;%b-%d-%y; %H:%M:%S &quot;</span>
+        <span class="s1">self.players_read_instructions = []</span>
+        <span class="s1">self.players_finished_buttons = []</span>
+
+        <span class="s1">self.players_completed_survey = []</span>
+        <span class="s1">self.players_finished = []</span>
+        <span class="s1">self.paused = </span><span class="s4">0</span>
+        <span class="s1">self.players_ready = []</span>
+        <span class="s1">self.player_count = </span><span class="s4">0</span>
+        <span class="s1">self.clients_closed = []</span>
+
+        <span class="s1">self.player_finder = {}</span>
+        <span class="s1">self.scores = {}</span>
+        <span class="s1">self.image_1 = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.image_2 = </span><span class="s3">&quot;&quot;</span>
+
+        <span class="s1">self.overall_rounds = </span><span class="s4">0</span>
+        <span class="s1">self.practice_round = </span><span class="s4">0</span>
+        <span class="s1">self.practice_over = </span><span class="s4">0</span>
+        <span class="s1">self.round = </span><span class="s4">0</span>
+
+        <span class="s1">wx.Frame.__init__(self, parent, id, title)</span>
+
+        <span class="s1">self.StageTimer = wx.Timer(self)</span>
+
+        <span class="s1">panel = wx.Panel(self, wx.ID_ANY)</span>
+        <span class="s1">self.panel = panel</span>
+        <span class="s1">sizer = wx.GridBagSizer()</span>
+
+        <span class="s1">message_window = rt.RichTextCtrl(panel, id=wx.ID_ANY,</span>
+                                         <span class="s1">style=wx.TE_READONLY, size=(</span><span class="s4">600</span><span class="s1">, </span><span class="s4">400</span><span class="s1">))</span>
+        <span class="s1">quit_button = wx.Button(panel, wx.ID_ANY, label=</span><span class="s3">&quot;Quit&quot;</span><span class="s1">)</span>
+        <span class="s1">hide_button = wx.Button(panel, wx.ID_ANY, label=</span><span class="s3">&quot;Hide Server&quot;</span><span class="s1">)</span>
+        <span class="s0"># new_round_button = wx.Button(panel, wx.ID_ANY, label=&quot;Force new Round&quot;)</span>
+
+        <span class="s1">self.message_window = message_window</span>
+        <span class="s1">self.quit_button = quit_button</span>
+        <span class="s1">self.hide_button = hide_button</span>
+
+        <span class="s1">sizer.Add(self.message_window, (</span><span class="s4">0</span><span class="s1">, </span><span class="s4">0</span><span class="s1">), span=(</span><span class="s4">1</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">sizer.Add(quit_button, (</span><span class="s4">1</span><span class="s1">, </span><span class="s4">0</span><span class="s1">))</span>
+        <span class="s1">sizer.Add(hide_button, (</span><span class="s4">1</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s0"># sizer.Add(new_round_button, (1, 1))</span>
+
+        <span class="s0"># pause_button = wx.Button(panel, wx.ID_ANY, label=&quot;Pause&quot;)</span>
+        <span class="s0"># self.pause_button = pause_button</span>
+        <span class="s0"># sizer.Add(self.pause_button, (2, 1))</span>
+
+        <span class="s1">panel.SetSizer(sizer)</span>
+        <span class="s1">sizer.Fit(self)</span>
+        <span class="s1">self.SetSizeHints(self.GetSize().x, self.GetSize().y, self.GetSize().x,</span>
+                          <span class="s1">self.GetSize().y)</span>
+        <span class="s1">self.Bind(wx.EVT_CLOSE, self.on_exit_app)</span>
+        <span class="s1">self.Bind(wx.EVT_BUTTON, self.on_quit_button, quit_button)</span>
+        <span class="s1">self.Bind(wx.EVT_BUTTON, self.on_hide_button, hide_button)</span>
+        <span class="s0"># self.Bind(wx.EVT_BUTTON, self.on_pause_button, self.pause_button)</span>
+        <span class="s1">self.Bind(wx.EVT_TIMER, self.on_stage_timer, self.StageTimer)</span>
+        <span class="s0"># self.Bind(wx.EVT_BUTTON, self.on_force_new_round, new_round_button)</span>
+
+        <span class="s1">self.Show(</span><span class="s2">True</span><span class="s1">)</span>
+        <span class="s1">self.threads.append(ListenForClients(self, self.host, self.port))</span>
+        <span class="s2">for </span><span class="s1">thread </span><span class="s2">in </span><span class="s1">self.threads:</span>
+            <span class="s0"># so it'll stop when everything else does</span>
+            <span class="s1">thread.daemon = </span><span class="s2">True</span>
+            <span class="s1">thread.start()</span>
+
+    <span class="s2">def </span><span class="s1">final_results_read(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">print(</span><span class="s3">&quot;all clients closed&quot;</span><span class="s1">)</span>
+        <span class="s1">self.finish = </span><span class="s4">1</span>
+        <span class="s1">msg = </span><span class="s3">&quot;Closing at Server end&quot;</span>
+        <span class="s1">pub.sendMessage(</span><span class="s3">&quot;serverclosed&quot;</span><span class="s1">, data=msg)</span>
+        <span class="s0"># self.guilock.acquire()</span>
+        <span class="s0"># for player in self.playerlist:</span>
+        <span class="s0">#     killmessage = self.encode('9999KILL9999')</span>
+        <span class="s0">#     player.clnt.send(killmessage)</span>
+        <span class="s0">#     player.clnt.close()</span>
+        <span class="s0"># self.Destroy()</span>
+        <span class="s1">sys.exit()</span>
+        <span class="s0"># self.guilock.release()</span>
+
+    <span class="s0"># For messages that should appear on the server window.</span>
+    <span class="s2">def </span><span class="s1">screen_message(self, msg):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.message_window.WriteText(msg)</span>
+        <span class="s1">self.message_window.WriteText(</span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+        <span class="s1">end = self.message_window.GetCaretPosition()</span>
+        <span class="s1">self.message_window.ShowPosition(end)</span>
+
+    <span class="s2">def </span><span class="s1">write_survey_to_results(self):</span>
+        <span class="s0">&quot;&quot;&quot;Write the results of the survey to a separate file.&quot;&quot;&quot;</span>
+        <span class="s1">self.guilock.acquire()</span>
+        <span class="s1">survey_file_name = (</span><span class="s3">&quot;survey_results_group_&quot; </span><span class="s1">+ self.proband_group_name +</span>
+                            <span class="s3">&quot;.txt&quot;</span><span class="s1">)</span>
+        <span class="s1">survey_file_path = self.results_dir + </span><span class="s3">&quot;/&quot; </span><span class="s1">+ survey_file_name</span>
+        <span class="s2">if </span><span class="s1">os.path.isfile(survey_file_path):</span>
+            <span class="s1">time = datetime.datetime.strftime(datetime.datetime.now(), </span><span class="s3">&quot;%b_%d_%y-%H_%M_%S&quot;</span><span class="s1">)</span>
+            
+            <span class="s1">self.proband_group_name = </span><span class="s3">&quot;group_&quot; </span><span class="s1">+ time</span>
+            <span class="s1">survey_file_name = (</span><span class="s3">&quot;survey_results_group_&quot; </span><span class="s1">+ self.proband_group_name +</span>
+                                <span class="s3">&quot;.txt&quot;</span><span class="s1">)</span>
+            <span class="s1">survey_file_path = self.results_dir + </span><span class="s3">&quot;/&quot; </span><span class="s1">+ survey_file_name</span>
+        <span class="s0"># with codecs.open(survey_file_path, &quot;w&quot;) as write_handle:</span>
+        <span class="s2">with </span><span class="s1">open(survey_file_path, </span><span class="s3">&quot;w&quot;</span><span class="s1">) </span><span class="s2">as </span><span class="s1">write_handle:</span>
+            <span class="s1">intro = (</span><span class="s3">&quot;Survey answers for participant group &quot; </span><span class="s1">+</span>
+                     <span class="s1">self.proband_group_name + </span><span class="s3">&quot;</span><span class="s5">\n\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+            <span class="s1">write_handle.write(intro)</span>
+            <span class="s2">for </span><span class="s1">player, answers </span><span class="s2">in </span><span class="s1">self.survey_answers.iteritems():</span>
+                <span class="s1">parts = answers.split(</span><span class="s3">&quot;,&quot;</span><span class="s1">)</span>
+                <span class="s1">stripped = []</span>
+                <span class="s2">for </span><span class="s1">answer </span><span class="s2">in </span><span class="s1">parts:</span>
+                    <span class="s1">stripped.append(answer.strip())</span>
+                <span class="s1">answer_string = </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">&quot;</span><span class="s1">.join(stripped)</span>
+                <span class="s1">player = player + </span><span class="s3">&quot;:</span><span class="s5">\n</span><span class="s3">&quot;</span>
+
+                <span class="s2">try</span><span class="s1">:</span>
+                    <span class="s1">write_handle.write(player.encode(</span><span class="s3">'utf-8'</span><span class="s1">))</span>
+                    <span class="s1">write_handle.write(answer_string.encode(</span><span class="s3">'utf-8'</span><span class="s1">))</span>
+
+                <span class="s2">except</span><span class="s1">:</span>
+                    <span class="s1">tm = time.strftime(self.timestamp_format)</span>
+                    <span class="s1">error_msg = tm + </span><span class="s3">&quot;: MISSING DATA: COULDN'T WRITE DATA&quot;</span>
+                    <span class="s1">write_handle.write(error_msg)</span>
+                <span class="s1">write_handle.write(</span><span class="s3">&quot;</span><span class="s5">\n\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+        <span class="s1">self.guilock.release()</span>
+
+    <span class="s2">def </span><span class="s1">write_message_to_file(self, msg):</span>
+        <span class="s1">self.guilock.acquire()</span>
+        <span class="s1">time = datetime.datetime.strftime(datetime.datetime.now(), </span><span class="s3">&quot;%b_%d_%y-%H_%M_%S&quot;</span><span class="s1">)</span>
+        <span class="s1">file_name = (</span><span class="s3">&quot;results_group_&quot; </span><span class="s1">+ self.proband_group_name + </span><span class="s3">&quot;.txt&quot;</span><span class="s1">)</span>
+        <span class="s1">file_path = os.path.join(self.results_dir,file_name)</span>
+        <span class="s0"># with codecs.open(file_path, &quot;a&quot;) as results_file:</span>
+        <span class="s0">#     to_append = time + &quot; | &quot; + msg + &quot;\n&quot;</span>
+        <span class="s0">#     results_file.write(to_append.encode('utf-8'))</span>
+        <span class="s2">with </span><span class="s1">open(file_path, </span><span class="s3">&quot;a&quot;</span><span class="s1">) </span><span class="s2">as </span><span class="s1">results_file:</span>
+            <span class="s1">to_append = time + </span><span class="s3">&quot; | &quot; </span><span class="s1">+ msg + </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">&quot;</span>
+            <span class="s1">results_file.write(to_append)</span>
+            
+        <span class="s1">self.guilock.release()</span>
+
+    <span class="s2">def </span><span class="s1">encode(self, item):</span>
+        <span class="s0">&quot;&quot;&quot;Encode a message that is to be sent to the client(s).&quot;&quot;&quot;</span>
+        <span class="s0">#This is important for transmission purposes. </span>
+        <span class="s0">#Because the channel is essentially open, the end marker ensures distinct messages don't run into each other.</span>
+        <span class="s0">#(Or rather, if they do, it allows us to distinguish them.)</span>
+
+        <span class="s1">encoded_item = item.encode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">) + self.server_end_marker.encode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">)</span>
+        <span class="s2">return</span><span class="s1">(encoded_item)</span>
+
+
+    <span class="s2">def </span><span class="s1">on_exit_app(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Quit the GUI after reassurance.&quot;&quot;&quot;</span>
+        <span class="s2">if </span><span class="s1">self.allconnected == </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s1">quit_dialogue = wx.MessageDialog(</span><span class="s2">None</span><span class="s1">, </span><span class="s3">&quot;Are you sure you want to quit the GUI?&quot;</span><span class="s1">, </span><span class="s3">&quot;Quit?&quot;</span><span class="s1">,</span>
+                                            <span class="s1">wx.YES_NO)</span>
+            <span class="s1">quitresult = quit_dialogue.ShowModal()</span>
+            <span class="s2">if </span><span class="s1">quitresult == wx.ID_YES:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+                <span class="s1">self.finish = </span><span class="s4">1</span>
+                <span class="s1">msg = </span><span class="s3">&quot;Closing at Server end&quot;</span>
+                <span class="s1">pub.sendMessage(</span><span class="s3">&quot;serverclosed&quot;</span><span class="s1">, data=msg)</span>
+                <span class="s0"># if self.playerlist != []:</span>
+                <span class="s1">killmessage = self.encode(</span><span class="s3">'9999KILL9999'</span><span class="s1">)</span>
+                <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+                    <span class="s1">player.clnt.send(killmessage)</span>
+                    <span class="s1">player.clnt.close()</span>
+                <span class="s1">self.Destroy()</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">quit_dialogue = wx.MessageDialog(</span><span class="s2">None</span><span class="s1">, </span><span class="s3">&quot;Are you sure you want to quit the GUI?&quot;</span><span class="s1">, </span><span class="s3">&quot;Quit?&quot;</span><span class="s1">,</span>
+                                            <span class="s1">wx.YES_NO)</span>
+            <span class="s1">quitresult = quit_dialogue.ShowModal()</span>
+            <span class="s2">if </span><span class="s1">quitresult == wx.ID_YES:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+
+                <span class="s1">self.Destroy()</span>
+                <span class="s1">sys.exit()</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+
+    <span class="s2">def </span><span class="s1">on_quit_button(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Quit the GUI after reassurence.&quot;&quot;&quot;</span>
+        <span class="s2">if </span><span class="s1">self.allconnected == </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s1">quit_dialogue = wx.MessageDialog(</span><span class="s2">None</span><span class="s1">, </span><span class="s3">&quot;Are you sure you want to quit the GUI?&quot;</span><span class="s1">, </span><span class="s3">&quot;Quit?&quot;</span><span class="s1">,</span>
+                                            <span class="s1">wx.YES_NO)</span>
+            <span class="s1">quitresult = quit_dialogue.ShowModal()</span>
+            <span class="s2">if </span><span class="s1">quitresult == wx.ID_YES:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+                <span class="s1">self.finish = </span><span class="s4">1</span>
+                <span class="s1">msg = </span><span class="s3">&quot;Closing at Server end&quot;</span>
+                <span class="s0">#pub.sendMessage(&quot;serverclosed&quot;, data=msg)</span>
+                <span class="s0"># if self.playerlist != []:</span>
+                <span class="s1">killmessage = self.encode(</span><span class="s3">'9999KILL9999'</span><span class="s1">)</span>
+                <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+                    <span class="s1">player.clnt.send(killmessage)</span>
+                    <span class="s1">player.clnt.close()</span>
+                <span class="s1">self.Destroy()</span>
+                <span class="s1">sys.exit()</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">quit_dialogue = wx.MessageDialog(</span><span class="s2">None</span><span class="s1">, </span><span class="s3">&quot;Are you sure you want to quit the GUI?&quot;</span><span class="s1">, </span><span class="s3">&quot;Quit?&quot;</span><span class="s1">,</span>
+                                            <span class="s1">wx.YES_NO)</span>
+            <span class="s1">quitresult = quit_dialogue.ShowModal()</span>
+            <span class="s2">if </span><span class="s1">quitresult == wx.ID_YES:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+
+                <span class="s1">self.Destroy()</span>
+                <span class="s1">sys.exit()</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+
+    <span class="s2">def </span><span class="s1">on_pause_button(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">if </span><span class="s1">self.allconnected == </span><span class="s4">1 </span><span class="s2">and </span><span class="s1">self.paused == </span><span class="s4">0</span><span class="s1">:</span>
+            <span class="s1">quit_dialogue = wx.MessageDialog(</span><span class="s2">None</span><span class="s1">, </span><span class="s3">&quot;&quot;</span><span class="s1">, </span><span class="s3">&quot;Pause? Are you sure?&quot;</span><span class="s1">,</span>
+                                            <span class="s1">wx.YES_NO)</span>
+            <span class="s1">quitresult = quit_dialogue.ShowModal()</span>
+            <span class="s2">if </span><span class="s1">quitresult == wx.ID_YES:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+                <span class="s1">self.paused = </span><span class="s4">1</span>
+                <span class="s1">self.pause_button.SetLabel(</span><span class="s3">&quot;Unpause&quot;</span><span class="s1">)</span>
+                <span class="s1">tm = time.strftime(self.timestamp_format)</span>
+                <span class="s1">msg = </span><span class="s3">&quot;Pause button pressed.&quot;</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">quit_dialogue.Destroy()</span>
+                <span class="s2">pass</span>
+        <span class="s2">elif </span><span class="s1">self.allconnected == </span><span class="s4">1 </span><span class="s2">and </span><span class="s1">self.paused == </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s1">self.paused = </span><span class="s4">0</span>
+            <span class="s1">self.pause_button.SetLabel(</span><span class="s3">&quot;Pause&quot;</span><span class="s1">)</span>
+            <span class="s1">tm = time.strftime(self.timestamp_format)</span>
+            <span class="s1">msg = </span><span class="s3">&quot;Game unpaused&quot;</span>
+            <span class="s1">self.OnNewStage()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s2">pass</span>
+
+    <span class="s0">#This allows the server window to be hidden if it's running on the same computer as a client</span>
+    <span class="s2">def </span><span class="s1">on_hide_button(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.gui_show = </span><span class="s4">0</span>
+        <span class="s1">self.Show(</span><span class="s2">False</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">on_reveal(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.gui_show = </span><span class="s4">1</span>
+        <span class="s1">self.Show(</span><span class="s2">True</span><span class="s1">)</span>
+        <span class="s1">end = self.message_window.GetCaretPosition()</span>
+        <span class="s1">self.message_window.ShowPosition(end)</span>
+
+    <span class="s2">def </span><span class="s1">on_force_new_round(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.force_new_round()</span>
+
+    <span class="s2">def </span><span class="s1">force_new_round(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.on_new_round()</span>
+
+    <span class="s2">def </span><span class="s1">on_stage_timer(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.StageTimer.Stop()</span>
+        <span class="s2">except</span><span class="s1">:</span>
+            <span class="s2">pass</span>
+        <span class="s1">self.on_new_round()</span>
+
+    <span class="s2">def </span><span class="s1">finish_game(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+            <span class="s1">message = </span><span class="s3">&quot;9999GAMEOVER9999&quot;</span>
+            <span class="s1">encoded_message = self.encode(message)</span>
+            <span class="s1">player.clnt.send(encoded_message)</span>
+
+    <span class="s2">def </span><span class="s1">practice_rounds_over(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.scores:</span>
+            <span class="s1">self.scores[player] = </span><span class="s4">0</span>
+        <span class="s1">self.practice_over = </span><span class="s4">1</span>
+        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+            <span class="s1">message = self.encode(</span><span class="s3">&quot;9999ALLPRACTICEOVER@_9999&quot;</span><span class="s1">)</span>
+            <span class="s1">player.clnt.send(message)</span>
+
+    <span class="s2">def </span><span class="s1">on_new_round(self):</span>
+        <span class="s0">&quot;&quot;&quot;Start a new round. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self.images = []</span>
+
+        <span class="s0"># starting proper rounds</span>
+        <span class="s2">if </span><span class="s1">self.paused == </span><span class="s4">0 </span><span class="s2">and </span><span class="s1">self.practice_over == </span><span class="s4">1</span><span class="s1">:</span>
+
+            <span class="s2">if </span><span class="s1">self.round &lt; self.num_of_rounds:</span>
+                <span class="s1">print(</span><span class="s3">&quot;</span><span class="s5">\n\n\n</span><span class="s3">FINISHED ROUND&quot; </span><span class="s1">+ str(self.round) + </span><span class="s3">&quot;</span><span class="s5">\n\n\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+                <span class="s2">if </span><span class="s1">self.round &gt; </span><span class="s4">0</span><span class="s1">:</span>
+                    <span class="s1">m = </span><span class="s3">&quot;Round &quot; </span><span class="s1">+ str(self.round) + </span><span class="s3">&quot; finished.</span><span class="s5">\n</span><span class="s3">&quot;</span>
+                    <span class="s1">wx.CallAfter(self.screen_message, m)</span>
+                <span class="s1">self.round += </span><span class="s4">1</span>
+
+                <span class="s1">image_pair = [</span>
+                <span class="s1">self.parameters_for_proper_rounds[self.round][</span><span class="s3">&quot;image_1&quot;</span><span class="s1">],</span>
+                <span class="s1">self.parameters_for_proper_rounds[self.round][</span><span class="s3">&quot;image_2&quot;</span><span class="s1">]</span>
+                <span class="s1">]</span>
+                <span class="s1">image_pair = random.sample(image_pair, len(image_pair))</span>
+                <span class="s1">self.image_1 = image_pair[</span><span class="s4">0</span><span class="s1">]</span>
+                <span class="s1">self.image_2 = image_pair[</span><span class="s4">1</span><span class="s1">]</span>
+
+                <span class="s2">for </span><span class="s1">participant </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+                    <span class="s1">message = </span><span class="s3">&quot;9999ALLPROPERROUND&quot; </span><span class="s1">+ </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.image_1 + </span><span class="s3">&quot;=&quot; </span><span class="s1">+ self.image_2 + </span><span class="s3">&quot;9999&quot;</span>
+                    <span class="s1">encoded_message = self.encode(message)</span>
+                    <span class="s1">participant.clnt.send(encoded_message)</span>
+
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">self.finish_game()</span>
+
+        <span class="s0"># game paused, but practice rounds are not over</span>
+        <span class="s2">elif </span><span class="s1">self.paused == </span><span class="s4">0 </span><span class="s2">and </span><span class="s1">self.practice_over == </span><span class="s4">0</span><span class="s1">:</span>
+
+            <span class="s1">self.practice_round += </span><span class="s4">1</span>
+            <span class="s2">if </span><span class="s1">self.practice_round &gt; self.num_practice_rounds:</span>
+                <span class="s1">self.practice_rounds_over()</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">image_pair = [</span>
+                <span class="s1">self.practice_rounds_config[self.practice_round][</span><span class="s3">&quot;image_1&quot;</span><span class="s1">],</span>
+                <span class="s1">self.practice_rounds_config[self.practice_round][</span><span class="s3">&quot;image_2&quot;</span><span class="s1">]</span>
+                <span class="s1">]</span>
+                <span class="s1">image_pair = random.sample(image_pair, len(image_pair))</span>
+                <span class="s1">self.image_1 = image_pair[</span><span class="s4">0</span><span class="s1">]</span>
+                <span class="s1">self.image_2 = image_pair[</span><span class="s4">1</span><span class="s1">]</span>
+
+                <span class="s2">for </span><span class="s1">participant </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+                    <span class="s1">message = </span><span class="s3">&quot;9999ALLPRACTICEROUND&quot; </span><span class="s1">+ </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.image_1 + </span><span class="s3">&quot;=&quot; </span><span class="s1">+ self.image_2 + </span><span class="s3">&quot;9999&quot;</span>
+                    <span class="s1">encoded_message = self.encode(message)</span>
+                    <span class="s1">participant.clnt.send(encoded_message)</span>
+
+
+    <span class="s2">def </span><span class="s1">all_ready(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+            <span class="s2">if </span><span class="s1">self.practice_over == </span><span class="s4">1</span><span class="s1">:</span>
+                <span class="s2">pass</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">message = self.encode(</span><span class="s3">&quot;9999WHATISTHISFOR9999&quot;</span><span class="s1">)</span>
+                <span class="s1">player.clnt.send(message)</span>
+        <span class="s1">self.on_new_round()</span>
+
+    <span class="s2">def </span><span class="s1">initial_setup(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">random.shuffle(self.fakenames)</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(len(self.playerlist)):</span>
+            <span class="s1">self.playerlist[i].fakename = self.fakenames[i]</span>
+            <span class="s1">self.player_finder[self.fakenames[i]] = self.playerlist[i]</span>
+            <span class="s0"># self.scores[self.fakenames[i]] = 0</span>
+        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+            <span class="s1">msg = </span><span class="s3">&quot;9999WELCOME&quot; </span><span class="s1">+ str(self.randomization) + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ str(self.hard_mode) + </span><span class="s3">&quot;9999&quot;</span>
+            <span class="s1">message = self.encode(msg)</span>
+            <span class="s1">player.clnt.send(message)</span>
+
+    <span class="s2">def </span><span class="s1">setup_instructions(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">random.shuffle(self.fakenames)</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(len(self.playerlist)):</span>
+            <span class="s1">self.playerlist[i].fakename = self.fakenames[i]</span>
+            <span class="s1">self.player_finder[self.fakenames[i]] = self.playerlist[i]</span>
+            <span class="s1">self.scores[self.fakenames[i]] = </span><span class="s4">0</span>
+        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.playerlist:</span>
+            <span class="s1">message = </span><span class="s3">&quot;9999ALLINSTRUCTIONS@9999&quot;</span>
+            <span class="s1">encoded_message = self.encode(message)</span>
+            <span class="s1">player.clnt.send(encoded_message)</span>
+
+    <span class="s2">def </span><span class="s1">send_words_to_listener(self, words, player_index):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">encoded_message = self.encode(words)</span>
+        <span class="s2">if </span><span class="s1">self.nclnts == </span><span class="s4">2</span><span class="s1">:</span>
+            <span class="s1">self.listener.clnt.send(encoded_message)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">player_index == </span><span class="s4">1</span><span class="s1">:</span>
+                <span class="s1">self.listener_1.clnt.send(encoded_message)</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">self.listener_2.clnt.send(encoded_message)</span>
+
+
+<span class="s0"># Takes in data from clients and directs</span>
+<span class="s0"># it to the right places</span>
+<span class="s2">class </span><span class="s1">Srvr(threading.Thread):</span>
+    <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+
+    <span class="s1">data = </span><span class="s3">''</span>
+    <span class="s1">dlock = threading.Lock()</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, clntsock, gui):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">threading.Thread.__init__(self)</span>
+        <span class="s1">self.gui = gui</span>
+        <span class="s1">self.myclntsock = clntsock</span>
+        <span class="s1">self.data = Srvr.data</span>
+        <span class="s1">self.srvr_msg = re.compile(</span><span class="s3">r'9999.*9999\s'</span><span class="s1">)</span>
+        <span class="s1">self.clnt_msg = re.compile(</span><span class="s3">r'6666.*6666\s'</span><span class="s1">)</span>
+        <span class="s1">self.info_msg = re.compile(</span><span class="s3">r'6666INFO.*6666'</span><span class="s1">)</span>
+        <span class="s1">self.listener_msg = re.compile(</span><span class="s3">r'.*LISTENERDONE@(.*)@(.*)@.*'</span><span class="s1">)</span>
+        <span class="s1">self.pic_chosen_msg = re.compile(</span><span class="s3">r&quot;6666PIC(.*)@(.*)@.*&quot;</span><span class="s1">)</span>
+        <span class="s1">self.listener_pic_chosen_msg = re.compile(</span><span class="s3">r&quot;6666GUESS(.*)@(.*)@.*&quot;</span><span class="s1">)</span>
+        <span class="s1">self.coord_msg = re.compile(</span><span class="s3">r&quot;6666COORD(.*)@(.*)@.*&quot;</span><span class="s1">)</span>
+        <span class="s1">self.practice_msg = re.compile(</span><span class="s3">r'6666READYFORNEXTPRACTICE(.*)@(.*)6666'</span><span class="s1">)</span>
+        <span class="s1">self.instructions_read_msg = re.compile(</span><span class="s3">r&quot;.*INSTRUCTIONSREAD.*&quot;</span><span class="s1">)</span>
+        <span class="s1">self.finished_buttons_msg = re.compile(</span><span class="s3">r&quot;.*FINISHEDBUTTONS.*&quot;</span><span class="s1">)</span>
+        <span class="s1">self.close_msg = re.compile(</span><span class="s3">r&quot;.*CLOSED.*&quot;</span><span class="s1">)</span>
+        <span class="s1">self.qa_msg = re.compile(</span><span class="s3">r'6666QA(.*)6666(?!\s)'</span><span class="s1">)</span>
+        <span class="s1">self.player = </span><span class="s2">None</span>
+        <span class="s1">self.buffer = []</span>
+
+    <span class="s2">def </span><span class="s1">decode_strings(self, string):</span>
+        <span class="s0">&quot;&quot;&quot;Decode a string to utf-8.&quot;&quot;&quot;</span>
+        <span class="s2">return</span><span class="s1">(string.decode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">))</span>
+
+    <span class="s2">def </span><span class="s1">recv_end(self, the_socket):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">end = self.gui.server_end_marker</span>
+        <span class="s1">total_data = self.buffer</span>
+        <span class="s1">messages = []</span>
+        <span class="s1">data = </span><span class="s3">''</span>
+        <span class="s2">while True</span><span class="s1">:</span>
+            <span class="s1">raw_data = the_socket.recv(self.gui.bufsize)</span>
+            <span class="s1">data = self.decode_strings(raw_data)</span>
+
+            <span class="s2">if </span><span class="s1">end </span><span class="s2">in </span><span class="s1">data:</span>
+                <span class="s0"># msg_part = data[:data.find(end)].decode()</span>
+                <span class="s1">total_data.append(data[:data.find(end)])</span>
+                <span class="s1">messages.append(total_data)</span>
+                <span class="s1">total_data = []</span>
+                <span class="s1">self.buffer = []</span>
+                <span class="s1">message_length = len(end) + len(data[:data.find(end)])</span>
+                <span class="s2">if </span><span class="s1">message_length &lt; len(data):</span>
+                    <span class="s1">leftover = data[message_length:]</span>
+                    <span class="s2">while True</span><span class="s1">:</span>
+                        <span class="s2">if </span><span class="s1">end </span><span class="s2">in </span><span class="s1">leftover:</span>
+                            <span class="s1">total_data.append(leftover[:leftover.find(end)])</span>
+                            <span class="s1">messages.append(total_data)</span>
+                            <span class="s1">total_data = []</span>
+                            <span class="s1">message_length = (len(end) +</span>
+                                              <span class="s1">len(leftover[:leftover.find(end)]))</span>
+                            <span class="s2">if </span><span class="s1">len(leftover) == message_length:</span>
+                                <span class="s2">break</span>
+                            <span class="s2">else</span><span class="s1">:</span>
+                                <span class="s1">leftover = leftover[message_length:]</span>
+                        <span class="s2">else</span><span class="s1">:</span>
+                            <span class="s1">self.buffer.append(leftover)</span>
+                            <span class="s2">break</span>
+
+                <span class="s2">break</span>
+            <span class="s1">total_data.append(data)</span>
+            <span class="s2">if </span><span class="s1">len(total_data) &gt; </span><span class="s4">1</span><span class="s1">:</span>
+                <span class="s0"># check if end_of_data was split</span>
+                <span class="s1">last_pair = total_data[-</span><span class="s4">2</span><span class="s1">] + total_data[-</span><span class="s4">1</span><span class="s1">]</span>
+                <span class="s2">if </span><span class="s1">end </span><span class="s2">in </span><span class="s1">last_pair:</span>
+                    <span class="s1">total_data[-</span><span class="s4">2</span><span class="s1">] = last_pair[:last_pair.find(end)]</span>
+                    <span class="s1">total_data.pop()</span>
+                    <span class="s2">break</span>
+        <span class="s1">messages2return = []</span>
+        <span class="s0"># print(messages)</span>
+        <span class="s2">for </span><span class="s1">msg </span><span class="s2">in </span><span class="s1">messages:</span>
+            <span class="s0"># print(msg)</span>
+            <span class="s1">messages2return.append(</span><span class="s3">''</span><span class="s1">.join(msg))</span>
+
+        <span class="s2">return</span><span class="s1">(messages2return)</span>
+
+    <span class="s2">def </span><span class="s1">run(self):</span>
+        <span class="s0"># print(&quot;Now running&quot;)</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">def </span><span class="s1">establish_client_list():</span>
+            <span class="s1">print(</span><span class="s3">&quot;establishing client list...&quot;</span><span class="s1">)</span>
+            <span class="s3">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+            <span class="s1">name_message = </span><span class="s3">&quot;Participant names: &quot;</span>
+            <span class="s1">counter = </span><span class="s4">0</span>
+
+            <span class="s0">#random.shuffle(self.gui.playerlist)</span>
+
+            <span class="s1">self.gui.speaker = self.gui.playerlist[</span><span class="s4">0</span><span class="s1">]</span>
+            <span class="s1">self.gui.listener = self.gui.playerlist[</span><span class="s4">1</span><span class="s1">]</span>
+
+            <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">0</span><span class="s1">, len(self.gui.playerlist)):</span>
+                <span class="s1">self.gui.playerlist[i].index = i</span>
+                <span class="s1">counter += </span><span class="s4">1</span>
+                <span class="s1">name_message += str(i)</span>
+                <span class="s1">name_message += </span><span class="s3">&quot;:&quot;</span>
+                <span class="s1">name_message += str(self.gui.playerlist[i].realname)</span>
+                <span class="s2">if </span><span class="s1">counter % </span><span class="s4">4 </span><span class="s1">== </span><span class="s4">0 </span><span class="s2">and </span><span class="s1">counter != len(self.gui.playerlist):</span>
+                    <span class="s1">name_message += </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">&quot;</span>
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">name_message += </span><span class="s3">&quot; &quot;</span>
+
+            <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(len(self.gui.playerlist)):</span>
+                <span class="s1">begin_message = self.gui.encode(</span><span class="s3">&quot;9999BEGIN&quot; </span><span class="s1">+ str(i) + </span><span class="s3">&quot;@&quot; </span><span class="s1">+</span>
+                                                <span class="s1">self.gui.images_path + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ str(self.gui.no_of_clicks) +</span>
+                                                <span class="s3">&quot;@&quot; </span><span class="s1">+ str(self.gui.time_per_round) + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ str(self.gui.swapping) + </span><span class="s3">&quot;9999&quot;</span><span class="s1">)</span>
+                <span class="s1">self.gui.playerlist[i].clnt.send(begin_message)</span>
+            <span class="s1">wx.CallAfter(self.gui.initial_setup)</span>
+
+        <span class="s2">while </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s0"># indata_list = self.recv_end(self.myclntsock)</span>
+            <span class="s2">try</span><span class="s1">:</span>
+                <span class="s1">indata_list = self.recv_end(self.myclntsock)</span>
+            <span class="s2">except</span><span class="s1">:</span>
+                <span class="s1">print(</span><span class="s3">'Connection closed due to socket exception. No longer receiving data.'</span><span class="s1">)</span>
+                <span class="s0"># sys.exit()</span>
+                <span class="s2">break</span>
+            <span class="s2">for </span><span class="s1">indata </span><span class="s2">in </span><span class="s1">indata_list:</span>
+                <span class="s1">Srvr.dlock.acquire()</span>
+                <span class="s1">self.data = indata</span>
+                <span class="s1">print(</span><span class="s3">&quot;self.data = &quot;</span><span class="s1">, self.data)</span>
+                <span class="s1">self.gui.write_message_to_file(self.data)</span>
+                <span class="s2">if </span><span class="s1">(re.match(self.srvr_msg, self.data) </span><span class="s2">or</span>
+                   <span class="s1">re.match(self.clnt_msg, self.data)):</span>
+                    <span class="s1">msg = </span><span class="s3">'Participant ' </span><span class="s1">+ str(self.player.index) + </span><span class="s3">' knows too much'</span>
+
+                <span class="s2">elif </span><span class="s1">self.data == </span><span class="s3">'6666NEXTROUND6666'</span><span class="s1">:</span>
+                    <span class="s1">self.gui.on_new_round()</span>
+
+                <span class="s2">elif </span><span class="s1">self.data == </span><span class="s3">'6666KILL6666'</span><span class="s1">:</span>
+                    <span class="s0"># msg = &quot;Closing at Server end&quot;</span>
+                    <span class="s0"># pub.sendMessage(&quot;serverclosed&quot;, data=msg)</span>
+
+                    <span class="s1">Srvr.dlock.release()</span>
+                    <span class="s2">break</span>
+
+                <span class="s2">elif </span><span class="s1">self.data.startswith(</span><span class="s3">&quot;6666SURVEYCOMPLETED&quot;</span><span class="s1">):</span>
+                    <span class="s0"># add the player that has completed the survey</span>
+                    <span class="s1">self.gui.players_completed_survey.append(self.player)</span>
+                    <span class="s0"># get time of completion</span>
+                    <span class="s1">tm = time.strftime(self.gui.timestamp_format)</span>
+                    <span class="s0"># generate message for writing into results file</span>
+                    <span class="s1">answers = self.data.split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s4">1</span><span class="s1">] + </span><span class="s3">&quot;, &quot; </span><span class="s1">+ tm</span>
+                    <span class="s1">print(</span><span class="s3">&quot;survey msg = &quot;</span><span class="s1">, answers)</span>
+                    <span class="s1">self.gui.survey_answers[self.player.fakename] = answers</span>
+                    <span class="s0"># msg = (tm + self.player.fakename +</span>
+                    <span class="s0">#       &quot;'s answers to the survey: &quot; + survey_answers)</span>
+
+                    <span class="s0"># if both player finished the survey, continue with</span>
+                    <span class="s0"># instructions</span>
+                    <span class="s2">if </span><span class="s1">(len(self.gui.players_completed_survey) ==</span>
+                       <span class="s1">len(self.gui.playerlist)):</span>
+                        <span class="s0">#wx.CallAfter(self.gui.write_survey_to_results)</span>
+                        <span class="s1">wx.CallAfter(self.gui.setup_instructions)</span>
+
+                <span class="s0"># if all participants read the instructions, go on to</span>
+                <span class="s0"># the buttons prototype</span>
+                <span class="s2">elif </span><span class="s1">(re.match(self.instructions_read_msg, self.data)):</span>
+                    <span class="s1">self.gui.players_read_instructions.append(self.player)</span>
+                    <span class="s2">if </span><span class="s1">(len(self.gui.players_read_instructions) ==</span>
+                       <span class="s1">len(self.gui.playerlist)):</span>
+                        <span class="s1">wx.CallAfter(self.gui.on_new_round)</span>
+
+                <span class="s2">elif </span><span class="s1">(re.match(self.finished_buttons_msg, self.data)):</span>
+                    <span class="s1">self.gui.players_finished_buttons.append(self.player)</span>
+                    <span class="s2">if </span><span class="s1">(len(self.gui.players_finished_buttons) ==</span>
+                       <span class="s1">len(self.gui.playerlist)):</span>
+                        <span class="s0"># all_readyToReadInstructions = all_ready</span>
+                        <span class="s1">wx.CallAfter(self.gui.all_ready)</span>
+
+                <span class="s2">elif </span><span class="s1">(re.match(self.practice_msg, self.data)):</span>
+                    <span class="s1">self.gui.players_ready.append(self.player)</span>
+                    <span class="s2">if </span><span class="s1">len(self.gui.players_ready) == len(self.gui.playerlist):</span>
+                        <span class="s1">wx.CallAfter(self.gui.on_new_round)</span>
+
+                <span class="s2">elif </span><span class="s1">self.data.startswith(</span><span class="s3">&quot;6666READYTOSTARTPROPERROUNDS&quot;</span><span class="s1">):</span>
+                    <span class="s1">self.gui.player_count += </span><span class="s4">1</span>
+                    <span class="s2">if </span><span class="s1">self.gui.player_count == </span><span class="s4">1</span><span class="s1">:</span>
+                        <span class="s1">name = self.data.split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s4">1</span><span class="s1">]</span>
+                        <span class="s1">message = </span><span class="s3">&quot;9999ONLYONEPLAYERREADY9999&quot;</span>
+                        <span class="s1">encoded_message = self.gui.encode(message)</span>
+                        <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.gui.playerlist:</span>
+                            <span class="s2">if </span><span class="s1">player.realname == name:</span>
+                                <span class="s1">player.clnt.send(encoded_message)</span>
+                    <span class="s2">elif </span><span class="s1">self.gui.player_count &gt; </span><span class="s4">1</span><span class="s1">:</span>
+                        <span class="s1">self.gui.player_count = </span><span class="s4">0</span>
+                        <span class="s1">wx.CallAfter(self.gui.on_new_round)</span>
+
+                <span class="s2">elif </span><span class="s1">(re.match(self.listener_msg, self.data)):</span>
+
+                    <span class="s0"># utterance_split = self.data.split(&quot;_&quot;)</span>
+                    <span class="s0"># utterance_part = utterance_split[1]</span>
+                    <span class="s1">m = re.match(self.listener_msg, self.data)</span>
+                    <span class="s1">self.gui.listener_no = int(m.group(</span><span class="s4">2</span><span class="s1">))</span>
+
+                    <span class="s1">self.gui.players_ready.append(self.player)</span>
+                    <span class="s2">if </span><span class="s1">len(self.gui.players_ready) == len(self.gui.playerlist):</span>
+
+                        <span class="s1">self.gui.players_ready = []</span>
+
+                        <span class="s1">wx.CallAfter(self.gui.on_new_round)</span>
+
+                <span class="s2">elif </span><span class="s1">(re.match(self.close_msg, self.data)):</span>
+                    <span class="s1">self.gui.clients_closed.append(self.player)</span>
+
+                    <span class="s2">if </span><span class="s1">len(self.gui.clients_closed) == len(self.gui.playerlist):</span>
+                        <span class="s1">wx.CallAfter(self.gui.final_results_read)</span>
+
+                <span class="s2">elif </span><span class="s1">re.match(self.info_msg, self.data):</span>
+                    <span class="s0"># print(&quot;It's a match&quot;)</span>
+                    <span class="s1">info_message = self.data</span>
+                    <span class="s1">participant_name = info_message[</span><span class="s4">8</span><span class="s1">:-</span><span class="s4">4</span><span class="s1">]</span>
+                    <span class="s1">self.player.realname = participant_name</span>
+                    <span class="s1">self.gui.realnames[self.player.index] = participant_name</span>
+                    <span class="s0"># So if we now have all the clients we want,</span>
+                    <span class="s0"># we can start things off</span>
+                    <span class="s2">if </span><span class="s3">&quot;?&quot; </span><span class="s2">not in </span><span class="s1">self.gui.realnames:</span>
+                        <span class="s1">establish_client_list()</span>
+
+                <span class="s2">elif </span><span class="s1">re.match(self.pic_chosen_msg, self.data):</span>
+                    <span class="s1">m = re.match(self.pic_chosen_msg, self.data)</span>
+                    <span class="s0"># get the important parts of the message, picture</span>
+                    <span class="s0"># and speaker number</span>
+                    <span class="s1">chosen_pic = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s3">&quot;chosen = &quot;</span><span class="s1">, chosen_pic)</span>
+                    <span class="s1">self.gui.speaker_no = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s3">&quot;speaker no = &quot;</span><span class="s1">, self.gui.speaker_no)</span>
+                    <span class="s0"># append the current player to the list</span>
+                    <span class="s0"># (if the list is complete, the next round etc. can start)</span>
+                    <span class="s1">self.gui.players_ready.append(self.player)</span>
+                    <span class="s0"># create the message for the listener</span>
+                    <span class="s0">#message = &quot;9999PIC&quot; + chosen_pic + &quot;9999&quot;</span>
+                    <span class="s0">#encoded_message = self.gui.encode(message)</span>
+                    <span class="s0">#for player in self.gui.playerlist:</span>
+                    <span class="s0">#    player.clnt.send(encoded_message)</span>
+
+                <span class="s2">elif </span><span class="s1">re.match(self.listener_pic_chosen_msg, self.data):</span>
+                    <span class="s1">m = re.match(self.listener_pic_chosen_msg, self.data)</span>
+                    <span class="s0"># get the important parts of the message, picture</span>
+                    <span class="s0"># and speaker number</span>
+                    <span class="s1">listener_chosen_pic = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s3">&quot;chosen = &quot;</span><span class="s1">, listener_chosen_pic)</span>
+                    <span class="s1">self.gui.listener_no = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s3">&quot;listener no = &quot;</span><span class="s1">, self.gui.listener_no)</span>
+                    <span class="s0"># append the current player to the list</span>
+                    <span class="s0"># (if the list is complete, the next round etc. can start)</span>
+                    <span class="s1">self.gui.players_ready.append(self.player)</span>
+                    <span class="s0"># create the message for the listener</span>
+                    <span class="s1">message = </span><span class="s3">&quot;9999GUESS&quot; </span><span class="s1">+ listener_chosen_pic + </span><span class="s3">&quot;9999&quot;</span>
+                    <span class="s0"># send the message to the players</span>
+                    <span class="s1">encoded_message = self.gui.encode(message)</span>
+                    <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.gui.playerlist:</span>
+                        <span class="s1">player.clnt.send(encoded_message)</span>
+
+                <span class="s2">elif </span><span class="s1">re.match(self.coord_msg, self.data):</span>
+                    <span class="s1">m = re.match(self.coord_msg, self.data)</span>
+                    <span class="s0"># get the important parts of the message, picture</span>
+                    <span class="s0"># and speaker number</span>
+                    <span class="s1">filled = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s3">&quot;filled = &quot;</span><span class="s1">, filled)</span>
+                    <span class="s1">self.gui.speaker_no = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                    <span class="s1">print(</span><span class="s3">&quot;speaker no = &quot;</span><span class="s1">, self.gui.speaker_no)</span>
+                    <span class="s0"># append the current player to the list</span>
+                    <span class="s0"># (if the list is complete, the next round etc. can start)</span>
+                    <span class="s1">self.gui.players_ready.append(self.player)</span>
+                    <span class="s0"># create the message for the listener</span>
+                    <span class="s1">message = </span><span class="s3">&quot;9999COORD&quot; </span><span class="s1">+ filled + </span><span class="s3">&quot;9999&quot;</span>
+                    <span class="s0"># send the message to the listener</span>
+                    <span class="s1">encoded_message = self.gui.encode(message)</span>
+                    <span class="s2">for </span><span class="s1">player </span><span class="s2">in </span><span class="s1">self.gui.playerlist:</span>
+                        <span class="s1">player.clnt.send(encoded_message)</span>
+
+                <span class="s2">elif </span><span class="s1">re.match(self.qa_msg, self.data):</span>
+                    <span class="s1">m = re.match(self.qa_msg, self.data)</span>
+                    <span class="s1">qa = json.loads(m.group(</span><span class="s4">1</span><span class="s1">))</span>
+                    <span class="s1">question = qa[</span><span class="s4">0</span><span class="s1">]</span>
+                    <span class="s1">answer = qa[</span><span class="s4">1</span><span class="s1">]</span>
+                    <span class="s1">qa4results = (self.player.realname +</span>
+                                  <span class="s3">&quot; (&quot; </span><span class="s1">+ self.player.fakename +</span>
+                                  <span class="s3">&quot;) questionnaire answer:&quot; </span><span class="s1">+</span>
+                                  <span class="s1">question + </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">&quot; </span><span class="s1">+</span>
+                                  <span class="s1">answer + </span><span class="s3">&quot;</span><span class="s5">\n\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+
+                <span class="s2">elif </span><span class="s1">self.data == </span><span class="s3">'/showserver' </span><span class="s2">and </span><span class="s1">self.gui.gui_show == </span><span class="s4">0</span><span class="s1">:</span>
+                    <span class="s1">wx.CallAfter(self.gui.on_reveal)</span>
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">print(</span><span class="s3">&quot;miscellaneous data: &quot;</span><span class="s1">, self.data)</span>
+
+                <span class="s1">Srvr.dlock.release()</span>
+            <span class="s1">indata_list = []</span>
+        <span class="s1">print(</span><span class="s3">&quot;closing socket&quot;</span><span class="s1">)</span>
+        <span class="s1">self.myclntsock.close()</span>
+
+
+<span class="s2">class </span><span class="s1">ListenForClients(threading.Thread):</span>
+    <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, gui, host, port):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">threading.Thread.__init__(self)</span>
+        <span class="s1">self.gui = gui</span>
+        <span class="s0"># Symbolic name meaning all available interfaces</span>
+        <span class="s1">self.host = host</span>
+        <span class="s0"># Arbitrary non-privileged port</span>
+        <span class="s1">self.port = port</span>
+
+    <span class="s2">def </span><span class="s1">run(self):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">ip_address = socket.gethostbyname(socket.gethostname())</span>
+            <span class="s1">msg = </span><span class="s3">'Server IP: ' </span><span class="s1">+ str(ip_address)</span>
+            <span class="s0"># HOST, PORT = &quot;192.168.1.64&quot;, 9001</span>
+            <span class="s0"># port between 1024 und 65535</span>
+        <span class="s2">except </span><span class="s1">socket.gaierror:</span>
+            <span class="s1">msg = </span><span class="s3">&quot;Could not obtain Server IP. Obtain manually.&quot;</span>
+
+        <span class="s1">wx.CallAfter(self.gui.screen_message, msg)</span>
+        <span class="s1">wx.CallAfter(self.gui.screen_message, </span><span class="s3">'Waiting for clients...'</span><span class="s1">)</span>
+        <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(self.gui.nclnts):</span>
+            <span class="s1">self.gui.realnames.append(</span><span class="s3">&quot;?&quot;</span><span class="s1">)</span>
+        <span class="s2">while </span><span class="s1">self.gui.finish == </span><span class="s4">0</span><span class="s1">:</span>
+            <span class="s1">lstn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span>
+            <span class="s0"># bins socket object to port &amp; host</span>
+            <span class="s1">lstn.bind((self.host, self.port))</span>
+            <span class="s0"># Listen for clients (5 is maximum number to be queued.</span>
+            <span class="s0"># System dependent, but usually 5)</span>
+            <span class="s0"># We only need 2 or 4</span>
+            <span class="s1">lstn.listen(</span><span class="s4">4</span><span class="s1">)</span>
+            <span class="s0"># Wait for all clients to connect</span>
+            <span class="s2">for </span><span class="s1">i </span><span class="s2">in </span><span class="s1">range(self.gui.nclnts):</span>
+                <span class="s1">(clnt, ap) = lstn.accept()</span>
+                <span class="s1">s = Srvr(clnt, self.gui)</span>
+                <span class="s1">newplayer = Player(clnt, self.gui, s)</span>
+                <span class="s1">newplayer.index = i</span>
+                <span class="s1">s.player = newplayer</span>
+                <span class="s1">self.gui.playerlist.append(newplayer)</span>
+                <span class="s1">tm = time.strftime(self.gui.timestamp_format)</span>
+                <span class="s1">msg = tm + </span><span class="s3">'Client ' </span><span class="s1">+ str(i) + </span><span class="s3">' added'</span>
+                <span class="s1">wx.CallAfter(self.gui.screen_message, msg)</span>
+                <span class="s1">self.gui.threads.append(s)</span>
+                <span class="s1">s.start()</span>
+                <span class="s1">tm = time.strftime(self.gui.timestamp_format)</span>
+            <span class="s1">msg = </span><span class="s3">'All clients connected'</span>
+            <span class="s1">wx.CallAfter(self.gui.screen_message, msg)</span>
+            <span class="s1">lstn.close()</span>
+            <span class="s1">self.gui.allconnected = </span><span class="s4">1</span>
+            <span class="s2">break</span>
+
+
+<span class="s2">class </span><span class="s1">Server:</span>
+    <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent, gui_show, nclnts, group_name, practice_path,</span>
+                 <span class="s1">proper_path, images_path, results_path,</span>
+                 <span class="s1">randomization, hard_mode, swapping, time_per_round, no_of_clicks):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s0"># The &quot;False&quot; parameter means &quot;don't redirect stdout and stderr to a gui&quot;</span>
+        <span class="s1">app = wx.App(</span><span class="s2">False</span><span class="s1">)</span>
+
+        <span class="s0"># instantiate the parameter file reader</span>
+        <span class="s1">parameter_reader = Parameters(randomized=randomization)</span>
+
+        <span class="s1">proper_rounds_config = parameter_reader.get_parameters_for_proper_rounds(proper_path)</span>
+        <span class="s1">practice_rounds_config = parameter_reader.get_parameters_for_practice_rounds(practice_path)</span>
+
+        <span class="s1">header = parameter_reader.header</span>
+
+        <span class="s1">frame = Gui(parent, wx.ID_ANY, </span><span class="s3">'Server'</span><span class="s1">, gui_show, nclnts,</span>
+                    <span class="s1">practice_rounds_config, proper_rounds_config, header,</span>
+                    <span class="s1">group_name, images_path, results_path,</span>
+                    <span class="s1">randomization, hard_mode, swapping, time_per_round, no_of_clicks)</span>
+        <span class="s1">app.MainLoop()</span>
+</pre>
+</body>
+</html>

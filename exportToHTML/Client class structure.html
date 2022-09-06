@@ -1,0 +1,79 @@
+<html>
+<head>
+<title>Client class structure</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #080808;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Client class structure</font>
+</center></td></tr></table>
+<pre><span class="s0">Windows are the base class</span>
+<span class="s0">Frames are windows</span>
+<span class="s0">Panels are placed in a frame</span>
+<span class="s0">Sizers are abstract base classes for laying out subwindows in a window -</span>
+<span class="s0">sizers should be able to contain frames and panels?</span>
+
+<span class="s0">Questions:</span>
+<span class="s0">How does the server/client interact?</span>
+
+<span class="s0">To implement:</span>
+<span class="s0">Fix new DrawingPage</span>
+
+<span class="s0">**Client**</span>
+<span class="s0">GuiWindow(wx.Frame)</span>
+    <span class="s0">Defines the welcome, survey, instruction, speaker_draw, listener_idle, speaker_idle, display_pic,</span>
+    <span class="s0">listener_choice stages.</span>
+    <span class="s0">Also swaps listener and speaker after receiving a begin_msg from the server after the end of each round?</span>
+    <span class="s0">What is msg_panel?</span>
+
+    <span class="s0">What do encode,submit msg do?</span>
+        <span class="s0">submit_message() is called by OnSubmit(), which happens when submit is clicked.</span>
+
+    <span class="s0">incoming_message(self, message) takes in messages from the server and uses regex to trigger if statements. This</span>
+    <span class="s0">method is called by ??.</span>
+        <span class="s0">instruction_stage()</span>
+        <span class="s0">practice round</span>
+        <span class="s0">proper round</span>
+        <span class="s0">What is 610-653? re.match(self.speaker_buttons_msg, message)</span>
+        <span class="s0">What is 679-683 m.group()? -&gt; extracting info from the server message w/ regex.</span>
+
+
+<span class="s0">QuestionnairePage(wx.Panel) (can be ignored)</span>
+<span class="s0">WelcomePage(wx.Panel)</span>
+    <span class="s0">Called by welcome_stage(self), which is called by incoming_message(self, message) to change stage to welcome.</span>
+<span class="s0">ListenerButtonsPanel(wx.Panel)</span>
+    <span class="s0">Called by listener_choice_stage(self), which is called by submit_message(self) to &lt;&lt;&gt;&gt;</span>
+    <span class="s0">Images are sent to the server as a message via path.</span>
+    <span class="s0">Speaker will see the grid + the image they submitted to the server.</span>
+<span class="s0">SpeakerButtonsPanel(wx.Panel)</span>
+    <span class="s0">Same as above, except the speaker is the one choosing the referent??</span>
+    <span class="s0">There is no drawing grid.</span>
+    <span class="s0">This class is called by speaker_buttons_stage() but is not in use?</span>
+<span class="s0">DrawingPage(wx.Panel)</span>
+    <span class="s0">Panel used for grid drawing. Timer included. Should also include a correct counter?</span>
+    <span class="s0">Defines the clicking behavior for the grid. On click, colors in grid square.</span>
+    <span class="s0">*Implement a method that displays the submitted grid upon submission*</span>
+<span class="s0">MessagePanel(wx.Panel)</span>
+    <span class="s0">Called by listener_idle_stage() and speaker_idle_stage() to display messages.</span>
+<span class="s0">InstructionsPage(wx.Panel)</span>
+    <span class="s0">Called by instructions_stage() and displays instructions.</span>
+<span class="s0">Reader(threading.Thread)</span>
+    <span class="s0">Reads in data from the server.</span>
+    <span class="s0">Calls incoming_message() in run(self) method. Where is run(self) called?</span>
+<span class="s0">class DummyPanel(wx.Panel) (can be ignored)</span>
+<span class="s0">Client class creates app and initializes GuiWindow as a frame.</span>
+
+
+<span class="s0">**run_client**</span>
+<span class="s0">Not sure why this is needed</span>
+
+<span class="s0">**TestGrid**</span>
+
+</pre>
+</body>
+</html>

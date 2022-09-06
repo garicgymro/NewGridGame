@@ -1,0 +1,25 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 5
+Gradual cell filling: False
+Aug_10_21-13_50_15 | 6666INFOdfa6666
+Aug_10_21-13_50_20 | 6666INFOfg6666
+Aug_10_21-13_50_24 | 6666SURVEYCOMPLETED@fg@Native language: fds, Main area of study: fds@6666
+Aug_10_21-13_50_29 | 6666SURVEYCOMPLETED@dfa@Native language: fd, Main area of study: fg@6666
+Aug_10_21-13_50_30 | 6666INSTRUCTIONSREAD@dfa@6666
+Aug_10_21-13_50_33 | 6666INSTRUCTIONSREAD@fg@6666
+Aug_10_21-13_50_33 | 6666image-7a.png|||image-8a.png6666
+Aug_10_21-13_50_33 | 6666PICimage-7a.png@dfa@6666
+Aug_10_21-13_50_35 | 6666FIRSTCLICK6666
+Aug_10_21-13_50_35 | 6666(0, 0)6666
+Aug_10_21-13_50_35 | 6666(0, 0)6666
+Aug_10_21-13_50_36 | 6666(0, 0)6666
+Aug_10_21-13_50_36 | 6666(0, 0)6666
+Aug_10_21-13_50_36 | 6666(0, 0)6666
+Aug_10_21-13_50_37 | 6666(0, 0)6666
+Aug_10_21-13_50_37 | 6666(0, 0)6666
+Aug_10_21-13_50_37 | 6666(0, 0)6666
+Aug_10_21-13_50_38 | 6666COORD[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@dfa@6666

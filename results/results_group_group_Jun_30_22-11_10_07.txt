@@ -1,0 +1,13 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_30_22-11_10_59 | 6666INFOfs6666
+Jun_30_22-11_11_14 | 6666INFOfsd6666
+Jun_30_22-11_11_16 | 6666SURVEYCOMPLETED@fsd@Native language: none given, Favorite Pokemon: , Main area of study: none given@6666
+Jun_30_22-11_11_19 | 6666SURVEYCOMPLETED@fs@Native language: none given, Favorite Pokemon: , Main area of study: none given@6666
+Jun_30_22-11_11_22 | 6666INSTRUCTIONSREAD@fs@6666
+Jun_30_22-11_11_24 | 6666INSTRUCTIONSREAD@fsd@6666

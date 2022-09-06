@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>README.txt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #080808;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+README.txt</font>
+</center></td></tr></table>
+<pre><span class="s0">Important client classes:</span>
+
+<span class="s0">SpeakerButtonsPanel (instantiated by speaker_buttons_stage()):</span>
+<span class="s0">-Where the Sender selects the picture he/she wants to draw.</span>
+<span class="s0">-THIS IS NOT BEING USED IN THE CURRENT VERSION</span>
+
+<span class="s0">DrawingPage (instantiated by speaker_draw_stage()):</span>
+<span class="s0">-Where the Sender makes his/her grid drawing.</span>
+
+<span class="s0">ListenerButtonsPanel (instantiated by listener_choice_stage()):</span>
+<span class="s0">-Where the Receiver sees the grid drawing makes his/her guess</span>
+
+
+<span class="s0">Notes:</span>
+
+<span class="s0">-&quot;Hard mode&quot; means when the timer runs out, a blank grid is sent, forcing 50/50 chance of failure.  When turned off, a partially filled grid can be sent.</span>
+
+<span class="s0">-To get human readable grid drawings, run the &quot;texify.py&quot; script from the command line with the name of the results file as its only argument.  This will create a folder with the same name as the results file containing a .tex file.  Compile the .tex file to get a PDF with glance-able drawings for each round.</span>
+
+<span class="s0">-There is still some de-crufting to be done.</span></pre>
+</body>
+</html>

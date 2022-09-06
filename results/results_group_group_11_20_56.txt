@@ -1,0 +1,20 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jan_14_22-11_21_28 | 6666INFOplayer16666
+Jan_14_22-11_21_34 | 6666INFOplayer26666
+Jan_14_22-11_21_41 | 6666SURVEYCOMPLETED@player1@Native language: f, Main area of study: f@6666
+Jan_14_22-11_21_43 | 6666SURVEYCOMPLETED@player2@Native language: f, Main area of study: f@6666
+Jan_14_22-11_21_44 | 6666INSTRUCTIONSREAD@player2@6666
+Jan_14_22-11_21_46 | 6666INSTRUCTIONSREAD@player1@6666
+Jan_14_22-11_21_46 | 6666image-8a.png|||image-7a.png6666
+Jan_14_22-11_21_46 | 6666PICimage-8a.png@player1@6666
+Jan_14_22-11_21_47 | 6666FIRSTCLICK6666
+Jan_14_22-11_21_47 | 6666(2, 0)6666
+Jan_14_22-11_21_48 | 6666(1, 0)6666
+Jan_14_22-11_21_48 | 6666(1, 0)6666
+Jan_14_22-11_21_49 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@6666

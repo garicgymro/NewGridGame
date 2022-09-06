@@ -1,0 +1,541 @@
+<html>
+<head>
+<title>run_server.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #1750eb;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+run_server.py</font>
+</center></td></tr></table>
+<pre><span class="s0">#!/usr/bin/python</span>
+<span class="s0"># -*- coding: utf-8 -*-</span>
+
+<span class="s0">&quot;&quot;&quot; 
+title           :run_server.py. 
+ 
+description     :starts the server software 
+author          :Gareth Roberts, Department of Linguistics, University 
+                 of Pennsylvania 
+                 adapted for ZAS by Lisa Raithel 
+usage           :python run_server.py 
+notes           :Server.py requires installation of wxPython 
+python_version  :2.7.7 
+&quot;&quot;&quot;</span>
+
+<span class="s2">from </span><span class="s1">__future__ </span><span class="s2">import </span><span class="s1">unicode_literals</span>
+
+<span class="s2">import </span><span class="s1">sys</span>
+<span class="s2">import </span><span class="s1">datetime</span>
+<span class="s2">import </span><span class="s1">os.path</span>
+
+<span class="s2">import </span><span class="s1">Server</span>
+
+<span class="s2">try</span><span class="s1">:</span>
+    <span class="s2">import </span><span class="s1">wx</span>
+<span class="s2">except </span><span class="s1">ImportError:</span>
+    <span class="s2">raise </span><span class="s1">ImportError(</span><span class="s3">&quot;The wxPython module is required to run this program&quot;</span><span class="s1">)</span>
+
+<span class="s0"># Allows messages to be sent between this software and the Server</span>
+<span class="s0"># software itself</span>
+<span class="s0"># from wx.lib.pubsub import setupkwargs</span>
+<span class="s0"># from wx.lib.pubsub import pub</span>
+<span class="s2">from </span><span class="s1">pubsub </span><span class="s2">import </span><span class="s1">pub</span>
+<span class="s0"># reload(sys)</span>
+<span class="s0"># sys.setdefaultencoding('utf8')</span>
+
+
+<span class="s0"># class NextPage(wx.Panel):</span>
+<span class="s0">#     &quot;&quot;&quot;Window for setting up the server.&quot;&quot;&quot;</span>
+
+<span class="s0">#     def __init__(self, parent):</span>
+<span class="s0">#         &quot;&quot;&quot;Initialise the next page&quot;&quot;&quot;</span>
+<span class="s0">#         wx.Panel.__init__(self, parent)</span>
+<span class="s0">#         self.new_grid_sizer = wx.GridBagSizer(hgap=3, vgap=3)</span>
+<span class="s0">#         self.frame = parent</span>
+
+<span class="s0">#         startbutton = wx.Button(self, wx.ID_ANY, label=&quot;Start nothing&quot;)</span>
+<span class="s0">#         next_button = wx.Button(self, wx.ID_ANY, label=&quot;next after next&quot;)</span>
+<span class="s0">#         new_text = wx.StaticText(self, label=&quot;NEW NEW TEXT&quot;)</span>
+<span class="s0">#         self.new_grid_sizer.Add(new_text, (5, 5))</span>
+<span class="s0">#         self.new_grid_sizer.Add(startbutton, (1, 3))</span>
+<span class="s0">#         self.new_grid_sizer.Add(next_button, (4, 6))</span>
+
+<span class="s0">#         self.SetSizer(self.new_grid_sizer)</span>
+<span class="s0">#         self.Center()</span>
+<span class="s0">#         self.new_grid_sizer.Fit(self)</span>
+<span class="s0">#         self.Layout()</span>
+
+
+<span class="s0">#This was designed by Lisa to allow the experimenter to set all sorts of parameters.</span>
+<span class="s0">#It would actually be better to have it automatically fill conditions based on what's needed</span>
+
+<span class="s2">class </span><span class="s1">SelectionPage(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Window for setting up the server.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;...&quot;&quot;&quot;</span>
+        <span class="s1">self.nclnts = </span><span class="s4">0</span>
+        <span class="s1">self.gui_show = </span><span class="s4">1</span>
+        <span class="s0"># self.input_type = &quot;&quot;</span>
+
+        <span class="s1">self.default_proper_parameters = </span><span class="s3">&quot;test_proper.csv&quot;</span>
+        <span class="s1">self.default_practice_parameters = </span><span class="s3">&quot;test_practice.csv&quot;</span>
+        <span class="s1">self.default_no_of_clicks = </span><span class="s3">&quot;15&quot;</span>
+        <span class="s1">self.default_time = </span><span class="s3">&quot;30&quot;</span>
+
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.grid_sizer = wx.GridBagSizer(hgap=</span><span class="s4">3</span><span class="s1">, vgap=</span><span class="s4">3</span><span class="s1">)</span>
+
+        <span class="s1">self.frame = parent</span>
+
+        <span class="s1">startbutton = wx.Button(self, wx.ID_ANY, label=</span><span class="s3">&quot;Start Server&quot;</span><span class="s1">)</span>
+        <span class="s0"># next_button = wx.Button(self, wx.ID_ANY, label=&quot;Next&quot;)</span>
+
+        <span class="s1">self.no_of_participants_text = wx.StaticText(self,</span>
+                                                     <span class="s1">label=</span><span class="s3">&quot;Number of participants:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.no_of_participants_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                             <span class="s1">wx.NORMAL))</span>
+        <span class="s1">self.button_2_part = wx.RadioButton(self, wx.ID_ANY,</span>
+                                            <span class="s1">label=</span><span class="s3">&quot;2 participants&quot;</span><span class="s1">)</span>
+        <span class="s1">self.button_2_part.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                   <span class="s1">wx.NORMAL))</span>
+        <span class="s1">self.button_2_part.SetValue(</span><span class="s2">True</span><span class="s1">)</span>
+
+        <span class="s0"># self.button_4_part = wx.RadioButton(self, wx.ID_ANY,</span>
+        <span class="s0">#                                     label=&quot;4 participants&quot;)</span>
+        <span class="s0"># self.button_4_part.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,</span>
+        <span class="s0">#                            wx.NORMAL))</span>
+
+        <span class="s1">self.group_name_text = wx.StaticText(self,</span>
+                                             <span class="s1">label=</span><span class="s3">&quot;Name of group:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.group_name_box = wx.TextCtrl(self, wx.ID_ANY,</span>
+                                          <span class="s1">size=(</span><span class="s4">180</span><span class="s1">, </span><span class="s4">30</span><span class="s1">))</span>
+        <span class="s1">self.group_name_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.NORMAL))</span>
+        <span class="s1">time = datetime.datetime.strftime(datetime.datetime.now(), </span><span class="s3">&quot;%H_%M_%S&quot;</span><span class="s1">)</span>
+        <span class="s1">label = </span><span class="s3">&quot;default: group_&quot; </span><span class="s1">+ time</span>
+
+        <span class="s1">self.group_name_hint = wx.StaticText(self,</span>
+                                             <span class="s1">label=label)</span>
+        <span class="s1">self.group_name_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">no_of_possible_clicks = [</span><span class="s3">&quot;5&quot;</span><span class="s1">, </span><span class="s3">&quot;10&quot;</span><span class="s1">, </span><span class="s3">&quot;15&quot;</span><span class="s1">, </span><span class="s3">&quot;20&quot;</span><span class="s1">, </span><span class="s3">&quot;25&quot;</span><span class="s1">, </span><span class="s3">&quot;30&quot;</span><span class="s1">]</span>
+        <span class="s1">self.click_times = wx.ComboBox(self, -</span><span class="s4">1</span><span class="s1">, size=(</span><span class="s4">120</span><span class="s1">, -</span><span class="s4">1</span><span class="s1">),</span>
+                                       <span class="s1">choices=no_of_possible_clicks,</span>
+                                       <span class="s1">style=wx.CB_READONLY)</span>
+        <span class="s1">self.click_times_text = wx.StaticText(self,</span>
+                                              <span class="s1">label=</span><span class="s3">&quot;Number of clicks per button:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.click_times_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                              <span class="s1">wx.NORMAL))</span>
+        <span class="s1">default_no_of_clicks_string = (</span><span class="s3">&quot;default: &quot; </span><span class="s1">+ self.default_no_of_clicks)</span>
+        <span class="s1">self.click_times_hint = wx.StaticText(self,</span>
+                                              <span class="s1">label=default_no_of_clicks_string)</span>
+        <span class="s1">self.click_times_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                              <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">possible_times_per_round = [</span><span class="s3">&quot;5&quot;</span><span class="s1">, </span><span class="s3">&quot;10&quot;</span><span class="s1">, </span><span class="s3">&quot;15&quot;</span><span class="s1">, </span><span class="s3">&quot;20&quot;</span><span class="s1">, </span><span class="s3">&quot;25&quot;</span><span class="s1">, </span><span class="s3">&quot;30&quot;</span><span class="s1">]</span>
+        <span class="s1">self.time = wx.ComboBox(self, -</span><span class="s4">1</span><span class="s1">, size=(</span><span class="s4">120</span><span class="s1">, -</span><span class="s4">1</span><span class="s1">),</span>
+                                <span class="s1">choices=possible_times_per_round,</span>
+                                <span class="s1">style=wx.CB_READONLY)</span>
+        <span class="s1">self.time_text = wx.StaticText(self, label=</span><span class="s3">&quot;Time per round:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.time_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                       <span class="s1">wx.NORMAL))</span>
+        <span class="s1">default_time_string = (</span><span class="s3">&quot;default: &quot; </span><span class="s1">+ self.default_time + </span><span class="s3">&quot; seconds&quot;</span><span class="s1">)</span>
+        <span class="s1">self.time_hint = wx.StaticText(self, label=default_time_string)</span>
+        <span class="s1">self.time_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                       <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.practice_rounds_box = wx.TextCtrl(self, wx.ID_ANY,</span>
+                                               <span class="s1">size=(</span><span class="s4">180</span><span class="s1">, </span><span class="s4">30</span><span class="s1">))</span>
+        <span class="s1">self.practice_rounds_text = wx.StaticText(self,</span>
+                                                  <span class="s1">label=</span><span class="s3">&quot;Path to practice round parameters:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.practice_rounds_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                          <span class="s1">wx.NORMAL))</span>
+        <span class="s1">default_practice_rounds_string = (</span><span class="s3">&quot;default: &quot; </span><span class="s1">+</span>
+                                          <span class="s1">self.default_practice_parameters)</span>
+        <span class="s1">self.practice_rounds_hint = wx.StaticText(self,</span>
+                                                  <span class="s1">label=default_practice_rounds_string)</span>
+        <span class="s1">self.practice_rounds_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                          <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.proper_rounds_box = wx.TextCtrl(self, wx.ID_ANY,</span>
+                                             <span class="s1">size=(</span><span class="s4">180</span><span class="s1">, </span><span class="s4">30</span><span class="s1">))</span>
+        <span class="s1">self.proper_rounds_text = wx.StaticText(self,</span>
+                                                <span class="s1">label=</span><span class="s3">&quot;Path to normal round parameters:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.proper_rounds_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                                <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">default_normal_rounds_string = </span><span class="s3">&quot;default: &quot; </span><span class="s1">+ self.default_proper_parameters</span>
+        <span class="s1">self.proper_rounds_hint = wx.StaticText(self,</span>
+                                                <span class="s1">label=default_normal_rounds_string)</span>
+        <span class="s1">self.proper_rounds_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                        <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.images_box = wx.TextCtrl(self, wx.ID_ANY,</span>
+                                      <span class="s1">size=(</span><span class="s4">180</span><span class="s1">, </span><span class="s4">30</span><span class="s1">))</span>
+        <span class="s1">self.images_text = wx.StaticText(self,</span>
+                                         <span class="s1">label=</span><span class="s3">&quot;Path to images:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.images_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                         <span class="s1">wx.NORMAL))</span>
+        <span class="s1">self.images_hint = wx.StaticText(self,</span>
+                                         <span class="s1">label=</span><span class="s3">&quot;default: images/&quot;</span><span class="s1">)</span>
+        <span class="s1">self.images_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                 <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.results_box = wx.TextCtrl(self, wx.ID_ANY,</span>
+                                       <span class="s1">size=(</span><span class="s4">180</span><span class="s1">, </span><span class="s4">30</span><span class="s1">))</span>
+        <span class="s1">self.results_text = wx.StaticText(self,</span>
+                                          <span class="s1">label=</span><span class="s3">&quot;Path to results:&quot;</span><span class="s1">)</span>
+        <span class="s1">self.results_text.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                          <span class="s1">wx.NORMAL))</span>
+        <span class="s1">self.results_hint = wx.StaticText(self,</span>
+                                          <span class="s1">label=</span><span class="s3">&quot;default: results/&quot;</span><span class="s1">)</span>
+        <span class="s1">self.results_hint.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                  <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.randomization = wx.CheckBox(self, wx.ID_ANY, label=</span><span class="s3">&quot;Randomization&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.hard_mode = wx.CheckBox(self, wx.ID_ANY, label=</span><span class="s3">&quot;Hard mode&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.swapping = wx.CheckBox(self, wx.ID_ANY, label=</span><span class="s3">&quot;Swapping&quot;</span><span class="s1">)</span>
+        
+        <span class="s1">self.randomization.SetValue(</span><span class="s2">True</span><span class="s1">)</span>
+        
+        <span class="s1">self.swapping.SetValue(</span><span class="s2">True</span><span class="s1">)</span>
+        
+        <span class="s1">self.time.SetValue(self.default_time)</span>
+        
+        <span class="s1">self.click_times.SetValue(self.default_no_of_clicks)</span>
+
+        <span class="s0"># self.type_of_input_text = wx.StaticText(self,</span>
+        <span class="s0">#                                         label=&quot;Answer generation:&quot;)</span>
+        <span class="s0"># self.type_of_input_text.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,</span>
+        <span class="s0">#                                 wx.NORMAL))</span>
+        <span class="s0"># self.button_dropdown = wx.RadioButton(self, wx.ID_ANY,</span>
+        <span class="s0">#                                       label=&quot;dropdown&quot;,</span>
+        <span class="s0">#                                       style=wx.RB_GROUP)</span>
+        <span class="s0"># self.button_dropdown.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,</span>
+        <span class="s0">#                              wx.NORMAL))</span>
+
+        <span class="s0"># self.button_text_entry = wx.RadioButton(self, wx.ID_ANY,</span>
+        <span class="s0">#                                         label=&quot;manual entry&quot;)</span>
+        <span class="s0"># self.button_text_entry.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,</span>
+        <span class="s0">#                                wx.NORMAL))</span>
+
+        <span class="s1">self.warn_msg = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.warning = wx.StaticText(self, label=self.warn_msg)</span>
+        <span class="s1">self.warning.SetFont(wx.Font(</span><span class="s4">9</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.BOLD))</span>
+        <span class="s1">self.warning.SetForegroundColour(wx.RED)</span>
+        <span class="s0"># This will listen out to a message from the Server that the</span>
+        <span class="s0"># server has closed.</span>
+        <span class="s1">pub.subscribe(self.finish_up, </span><span class="s3">&quot;serverclosed&quot;</span><span class="s1">)</span>
+        <span class="s1">self.all_items = []</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.no_of_participants_text, (</span><span class="s4">1</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.button_2_part, (</span><span class="s4">1</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s0"># self._add_to_sizer_and_list(self.button_4_part, (2, 2))</span>
+
+        <span class="s0"># self._add_to_sizer_and_list(self.type_of_input_text, (4, 1))</span>
+        <span class="s0"># self._add_to_sizer_and_list(self.button_dropdown, (4, 2))</span>
+        <span class="s0"># self._add_to_sizer_and_list(self.button_text_entry, (5, 2))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.group_name_text, (</span><span class="s4">4</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.group_name_box, (</span><span class="s4">4</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.group_name_hint, (</span><span class="s4">4</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.click_times_text, (</span><span class="s4">5</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.click_times, (</span><span class="s4">5</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.click_times_hint, (</span><span class="s4">5</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.time_text, (</span><span class="s4">6</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.time, (</span><span class="s4">6</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.time_hint, (</span><span class="s4">6</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.practice_rounds_text, (</span><span class="s4">7</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.practice_rounds_box, (</span><span class="s4">7</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.practice_rounds_hint, (</span><span class="s4">7</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.proper_rounds_text, (</span><span class="s4">8</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.proper_rounds_box, (</span><span class="s4">8</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.proper_rounds_hint, (</span><span class="s4">8</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.images_text, (</span><span class="s4">9</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.images_box, (</span><span class="s4">9</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.images_hint, (</span><span class="s4">9</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.results_text, (</span><span class="s4">10</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.results_box, (</span><span class="s4">10</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(self.results_hint, (</span><span class="s4">10</span><span class="s1">, </span><span class="s4">4</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.randomization, (</span><span class="s4">11</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.hard_mode, (</span><span class="s4">12</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.swapping, (</span><span class="s4">13</span><span class="s1">, </span><span class="s4">2</span><span class="s1">))</span>
+
+        <span class="s1">self._add_to_sizer_and_list(self.warning, (</span><span class="s4">14</span><span class="s1">, </span><span class="s4">1</span><span class="s1">))</span>
+        <span class="s1">self._add_to_sizer_and_list(startbutton, (</span><span class="s4">15</span><span class="s1">, </span><span class="s4">1</span><span class="s1">), (</span><span class="s4">1</span><span class="s1">, </span><span class="s4">2</span><span class="s1">), wx.EXPAND)</span>
+
+        <span class="s1">self.Bind(wx.EVT_BUTTON, self.start_server, startbutton)</span>
+        <span class="s1">self.Bind(wx.EVT_CLOSE, self.on_exit_app)</span>
+
+        <span class="s1">self.SetSizer(self.grid_sizer)</span>
+        <span class="s1">self.Center()</span>
+        <span class="s1">self.grid_sizer.Fit(self)</span>
+        <span class="s1">self.Layout()</span>
+
+    <span class="s2">def </span><span class="s1">_add_to_sizer_and_list(self, item, position, span=</span><span class="s2">None</span><span class="s1">, flag=</span><span class="s2">None</span><span class="s1">):</span>
+        <span class="s1">self.all_items.append(item)</span>
+
+        <span class="s2">if </span><span class="s1">span </span><span class="s2">is not None</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">flag </span><span class="s2">is not None</span><span class="s1">:</span>
+                <span class="s1">self.grid_sizer.Add(item, position, span, flag)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.grid_sizer.Add(item, position)</span>
+
+    <span class="s2">def </span><span class="s1">_get_no_of_participants(self):</span>
+        <span class="s2">if </span><span class="s1">self.button_2_part.GetValue():</span>
+            <span class="s1">self.nclnts = </span><span class="s4">2</span>
+        <span class="s0"># elif self.button_4_part.GetValue():</span>
+        <span class="s0">#     self.nclnts = 4</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">label = </span><span class="s3">&quot;Please choose the number of participants&quot;</span>
+            <span class="s1">self.warning.SetLabel(label)</span>
+            <span class="s1">self.warning.Show()</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">False</span><span class="s1">)</span>
+        <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">_get_type_of_answer_generation(self):</span>
+        <span class="s2">if </span><span class="s1">self.button_dropdown.GetValue():</span>
+            <span class="s1">self.input_type = </span><span class="s3">&quot;dropdown&quot;</span>
+        <span class="s2">elif </span><span class="s1">self.button_text_entry.GetValue():</span>
+            <span class="s1">self.input_type = </span><span class="s3">&quot;text entry&quot;</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">label = </span><span class="s3">&quot;Please choose sentence generation method&quot;</span>
+            <span class="s1">self.warning.SetLabel(label)</span>
+            <span class="s1">self.warning.Show()</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">False</span><span class="s1">)</span>
+        <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">_get_group_name(self):</span>
+        <span class="s1">time = datetime.datetime.strftime(datetime.datetime.now(), </span><span class="s3">&quot;%b_%d_%y-%H_%M_%S&quot;</span><span class="s1">)</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.group_name = self.group_name_box.GetValue()</span>
+            <span class="s2">if </span><span class="s1">self.group_name == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                <span class="s1">self.group_name = </span><span class="s3">&quot;group_&quot; </span><span class="s1">+ time</span>
+
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.group_name = </span><span class="s3">&quot;group_&quot; </span><span class="s1">+ time</span>
+
+    <span class="s2">def </span><span class="s1">_get_path_to_practice(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">path = self.practice_rounds_box.GetValue()</span>
+            <span class="s2">if </span><span class="s1">path == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                <span class="s1">path = self.default_practice_parameters</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">path = self.default_practice_parameters</span>
+        <span class="s2">if </span><span class="s1">os.path.exists(path):</span>
+            <span class="s1">self.practice_path = path</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">label = </span><span class="s3">&quot;Please choose a correct path for the practice rounds file&quot;</span>
+            <span class="s1">self.warning.SetLabel(label)</span>
+            <span class="s1">self.warning.Show()</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">False</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">_get_randomization(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.rand = self.randomization.GetValue()</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.rand = </span><span class="s2">False</span>
+
+    <span class="s2">def </span><span class="s1">_get_hard_mode(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.hm = self.hard_mode.GetValue()</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.hm = </span><span class="s2">False</span>
+
+    <span class="s2">def </span><span class="s1">_get_swapping(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.swap = self.swapping.GetValue()</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.swap = </span><span class="s2">False</span>
+
+    <span class="s2">def </span><span class="s1">_get_path_to_proper(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">path = self.proper_rounds_box.GetValue()</span>
+            <span class="s2">if </span><span class="s1">path == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                <span class="s1">path = self.default_proper_parameters</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">path = self.default_proper_parameters</span>
+        <span class="s2">if </span><span class="s1">os.path.exists(path):</span>
+            <span class="s1">self.proper_path = path</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">label = </span><span class="s3">&quot;Please choose a correct path for the proper rounds file&quot;</span>
+            <span class="s1">self.warning.SetLabel(label)</span>
+            <span class="s1">self.warning.Show()</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">False</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">_get_path_to_images(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">path = self.images_box.GetValue()</span>
+            <span class="s2">if </span><span class="s1">path == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                <span class="s1">path = </span><span class="s3">&quot;images&quot;</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">path = </span><span class="s3">&quot;images&quot;</span>
+        <span class="s2">if </span><span class="s1">os.path.exists(path):</span>
+            <span class="s2">if </span><span class="s1">os.path.isdir(path):</span>
+                <span class="s1">self.images_path = path</span>
+                <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+
+            <span class="s1">label = </span><span class="s3">&quot;Please choose a correct path for the image directory&quot;</span>
+            <span class="s1">self.warning.SetLabel(label)</span>
+            <span class="s1">self.warning.Show()</span>
+
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">False</span><span class="s1">)</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">label = </span><span class="s3">&quot;Please choose a correct path for the image directory file&quot;</span>
+            <span class="s1">self.warning.SetLabel(label)</span>
+            <span class="s1">self.warning.Show()</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">False</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">_get_no_of_clicks_per_button(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.no_of_clicks = int(self.click_times.GetValue())</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.no_of_clicks = int(self.default_no_of_clicks)</span>
+
+    <span class="s2">def </span><span class="s1">_get_time_per_round(self):</span>
+        <span class="s1">print(</span><span class="s3">&quot;getting time per round&quot;</span><span class="s1">)</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.time_per_round = int(self.time.GetValue())</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.time_per_round = int(self.default_time)</span>
+
+    <span class="s2">def </span><span class="s1">_get_path_to_results(self):</span>
+        <span class="s2">try</span><span class="s1">:</span>
+            <span class="s1">self.results_path = self.results_box.GetValue()</span>
+            <span class="s2">if </span><span class="s1">self.results_path == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                <span class="s1">self.results_path = </span><span class="s3">&quot;results&quot;</span>
+        <span class="s2">except </span><span class="s1">ValueError:</span>
+            <span class="s1">self.results_path = </span><span class="s3">&quot;results&quot;</span>
+
+    <span class="s2">def </span><span class="s1">start_server(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Start the server if all requirements are fulfilled.&quot;&quot;&quot;</span>
+        <span class="s1">self._get_group_name()</span>
+        <span class="s0"># if this path does not exist, it is newly created</span>
+        <span class="s1">self._get_path_to_results()</span>
+        <span class="s0"># set the randomization parameter to True or False</span>
+        <span class="s1">self._get_randomization()</span>
+        <span class="s0"># set mode (hard mode clears the grid if time runs out)</span>
+        <span class="s1">self._get_hard_mode()</span>
+        <span class="s0"># set role swapping</span>
+        <span class="s1">self._get_swapping()</span>
+        <span class="s0"># get time per round</span>
+        <span class="s1">self._get_time_per_round()</span>
+        <span class="s0"># get number of clicks per button</span>
+        <span class="s1">self._get_no_of_clicks_per_button()</span>
+        <span class="s0"># check for all paths if they are correct</span>
+        <span class="s2">if </span><span class="s1">(self._get_no_of_participants()):</span>
+            <span class="s2">if</span><span class="s1">(self._get_path_to_proper()):</span>
+                <span class="s2">if</span><span class="s1">(self._get_path_to_practice()):</span>
+                    <span class="s2">if</span><span class="s1">(self._get_path_to_images()):</span>
+                        <span class="s0"># This window hovers invisible in the</span>
+                        <span class="s0"># background until the Server is closed.</span>
+                        <span class="s1">self.Show(</span><span class="s2">False</span><span class="s1">)</span>
+                        <span class="s1">self.frame.Show(</span><span class="s2">False</span><span class="s1">)</span>
+                        <span class="s1">Server.Server(self,</span>
+                                      <span class="s1">self.gui_show,</span>
+                                      <span class="s1">self.nclnts,</span>
+                                      <span class="s1">self.group_name,</span>
+                                      <span class="s1">self.practice_path,</span>
+                                      <span class="s1">self.proper_path,</span>
+                                      <span class="s1">self.images_path,</span>
+                                      <span class="s1">self.results_path,</span>
+                                      <span class="s1">self.rand,</span>
+                                      <span class="s1">self.hm,</span>
+                                      <span class="s1">self.swap,</span>
+                                      <span class="s1">self.time_per_round,</span>
+                                      <span class="s1">self.no_of_clicks)</span>
+                        <span class="s1">sys.exit()</span>
+
+    <span class="s2">def </span><span class="s1">finish_up(self, data):</span>
+        <span class="s0">&quot;&quot;&quot;Close server.&quot;&quot;&quot;</span>
+        <span class="s1">self.Destroy()</span>
+
+    <span class="s2">def </span><span class="s1">on_exit_app(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Exit the setup after reassurence.&quot;&quot;&quot;</span>
+        <span class="s1">quit_dialoge = wx.MessageDialog(</span><span class="s2">None</span><span class="s1">,</span>
+                                        <span class="s3">&quot;Are you sure you want to quit the setup?&quot;</span><span class="s1">,</span>
+                                        <span class="s3">&quot;Quit?&quot;</span><span class="s1">, wx.YES_NO)</span>
+        <span class="s1">quitresult = quit_dialoge.ShowModal()</span>
+        <span class="s2">if </span><span class="s1">quitresult == wx.ID_YES:</span>
+            <span class="s1">quit_dialoge.Destroy()</span>
+            <span class="s1">self.Destroy()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">quit_dialoge.Destroy()</span>
+
+
+<span class="s2">class </span><span class="s1">Setup(wx.Frame):</span>
+    <span class="s0">&quot;&quot;&quot;Window for setting up the server.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent, id, title):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise the server setup. 
+ 
+        Some basic parameters: number of clients, number of practice 
+        rounds, should the Server GUI be visible 
+        &quot;&quot;&quot;</span>
+
+        <span class="s1">self.default_proper_parameters = </span><span class="s3">&quot;test_proper.csv&quot;</span>
+        <span class="s1">self.default_practice_parameters = </span><span class="s3">&quot;test_practice.csv&quot;</span>
+
+        <span class="s1">self.default_no_of_clicks = </span><span class="s3">&quot;5&quot;</span>
+        <span class="s1">self.default_time = </span><span class="s3">&quot;5&quot;</span>
+
+        <span class="s1">no_resize = wx.DEFAULT_FRAME_STYLE &amp; ~ (wx.RESIZE_BORDER |</span>
+                                                <span class="s1">wx.MAXIMIZE_BOX)</span>
+                                                <span class="s0"># wx.RESIZE_BOX |</span>
+                                                
+
+        <span class="s1">wx.Frame.__init__(self, parent, id, title=</span><span class="s3">&quot;Setup&quot;</span><span class="s1">, style=no_resize,</span>
+                          <span class="s1">size=(</span><span class="s4">680</span><span class="s1">, </span><span class="s4">480</span><span class="s1">))</span>
+        <span class="s0"># self.sizer = wx.GridBagSizer(hgap=3, vgap=3)</span>
+        <span class="s1">self.fSizer = wx.BoxSizer(wx.VERTICAL)</span>
+
+        <span class="s1">self.Show(</span><span class="s2">False</span><span class="s1">)</span>
+        <span class="s1">selection_panel = SelectionPage(self)</span>
+        <span class="s1">self.fSizer.Add(selection_panel, </span><span class="s4">1</span><span class="s1">, wx.EXPAND)</span>
+        <span class="s1">self.SetSizer(self.fSizer)</span>
+        <span class="s1">self.Center()</span>
+
+
+<span class="s2">class </span><span class="s1">App(wx.App):</span>
+    <span class="s0">&quot;&quot;&quot;Main application to start the sever setup and the server.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">OnInit(self):</span>
+        <span class="s0">&quot;&quot;&quot;Standard wxPython initialisation function.&quot;&quot;&quot;</span>
+        <span class="s1">self.frame = Setup(parent=</span><span class="s2">None</span><span class="s1">, id=wx.ID_ANY, title=</span><span class="s3">&quot;Server Setup&quot;</span><span class="s1">)</span>
+        <span class="s1">self.frame.Show()</span>
+        <span class="s1">self.SetTopWindow(self.frame)</span>
+        <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+
+
+<span class="s2">if </span><span class="s1">__name__ == </span><span class="s3">&quot;__main__&quot;</span><span class="s1">:</span>
+    <span class="s1">app = App()</span>
+    <span class="s0"># frame = Setup(None,wx.ID_ANY, 'Server setup')</span>
+    <span class="s1">app.MainLoop()</span>
+</pre>
+</body>
+</html>

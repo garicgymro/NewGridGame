@@ -1,0 +1,21 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_28_22-13_59_51 | 6666INFOjh6666
+Jun_28_22-13_59_54 | 6666INFOjhgf6666
+Jun_28_22-13_59_55 | 6666SURVEYCOMPLETED@jhgf@Native language: none given, Main area of study: none given@6666
+Jun_28_22-13_59_58 | 6666SURVEYCOMPLETED@jh@Native language: none given, Main area of study: none given@6666
+Jun_28_22-14_00_00 | 6666INSTRUCTIONSREAD@jh@6666
+Jun_28_22-14_00_03 | 6666INSTRUCTIONSREAD@jhgf@6666
+Jun_28_22-14_00_23 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@jh@Animal@6666
+Jun_28_22-14_00_27 | 6666GUESSPet@jhgf@Animal@6666
+Jun_28_22-14_00_28 | 6666NEXTROUND6666
+Jun_28_22-14_00_31 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@jhgf@Daisy@6666
+Jun_28_22-14_00_34 | 6666GUESSDaisy@jh@Daisy@6666
+Jun_28_22-14_00_35 | 6666NEXTROUND6666
+Jun_28_22-14_00_35 | 6666READYTOSTARTPROPERROUNDS@jh@6666
+Jun_28_22-14_00_37 | 6666READYTOSTARTPROPERROUNDS@jhgf@6666

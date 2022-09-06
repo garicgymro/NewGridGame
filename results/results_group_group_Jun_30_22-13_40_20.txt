@@ -1,0 +1,18 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_30_22-13_40_23 | 6666INFOjt6666
+Jun_30_22-13_40_26 | 6666INFOjtr6666
+Jun_30_22-13_40_28 | 6666SURVEYCOMPLETED@jtr@Native language: none given, Favorite Pokemon: , Main area of study: none given@6666
+Jun_30_22-13_40_31 | 6666SURVEYCOMPLETED@jt@Native language: none given, Favorite Pokemon: , Main area of study: none given@6666
+Jun_30_22-13_40_32 | 6666INSTRUCTIONSREAD@jt@6666
+Jun_30_22-13_40_35 | 6666INSTRUCTIONSREAD@jtr@6666
+Jun_30_22-13_40_43 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@jt@Pet@6666
+Jun_30_22-13_40_48 | 6666GUESSAnimal@jtr@Pet@6666
+Jun_30_22-13_40_56 | 6666NEXTROUND6666
+Jun_30_22-13_40_59 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@jtr@Novel@6666
+Jun_30_22-13_41_03 | 6666GUESSNovel@jt@Novel@6666

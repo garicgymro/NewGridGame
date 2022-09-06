@@ -1,0 +1,13 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_27_22-13_49_01 | 6666INFOg6666
+Jun_27_22-13_49_05 | 6666INFOyit6666
+Jun_27_22-13_49_08 | 6666SURVEYCOMPLETED@yit@Native language: none given, Main area of study: none given@6666
+Jun_27_22-13_49_11 | 6666SURVEYCOMPLETED@g@Native language: none given, Main area of study: none given@6666
+Jun_27_22-13_49_12 | 6666INSTRUCTIONSREAD@g@6666
+Jun_27_22-13_49_14 | 6666INSTRUCTIONSREAD@yit@6666

@@ -1,0 +1,9 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Aug_09_21-17_11_36 | 6666INFOfds6666
+Aug_09_21-17_12_03 | 6666INFOfdsgfgdfsg6666

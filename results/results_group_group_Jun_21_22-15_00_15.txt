@@ -1,0 +1,7 @@
+Parameters:
+Swapping: False
+Randomization: False
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False

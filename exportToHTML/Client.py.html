@@ -1,0 +1,1683 @@
+<html>
+<head>
+<title>Client.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #1750eb;}
+.s5 { color: #0037a6;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Client.py</font>
+</center></td></tr></table>
+<pre><span class="s0">#!/usr/bin/python2</span>
+<span class="s0"># -*- coding: utf-8 -*-</span>
+<span class="s0">&quot;&quot;&quot; 
+title           :Client.py. 
+ 
+description     :Client software 
+author          :Gareth Roberts, Department of Linguistics, 
+                 University of Pennsylvania 
+                 Adpated for ZAS Berlin by Lisa Raithel and Jon Stevens 
+usage           :python run_client.py 
+notes           :Requires installation of wxPython 
+python_version  :2.7.7 
+&quot;&quot;&quot;</span>
+
+<span class="s2">from </span><span class="s1">__future__ </span><span class="s2">import </span><span class="s1">division</span>
+<span class="s2">from </span><span class="s1">__future__ </span><span class="s2">import </span><span class="s1">unicode_literals</span>
+
+<span class="s2">import </span><span class="s1">codecs</span>
+<span class="s2">import </span><span class="s1">json</span>
+<span class="s0"># import os</span>
+<span class="s0"># import random</span>
+<span class="s2">import </span><span class="s1">re</span>
+<span class="s2">import </span><span class="s1">socket</span>
+<span class="s2">import </span><span class="s1">sys</span>
+<span class="s2">import </span><span class="s1">threading</span>
+<span class="s2">import </span><span class="s1">random</span>
+<span class="s2">import </span><span class="s1">os</span>
+
+<span class="s2">try</span><span class="s1">:</span>
+    <span class="s2">import </span><span class="s1">wx</span>
+<span class="s2">except </span><span class="s1">ImportError:</span>
+    <span class="s2">raise </span><span class="s1">ImportError(</span><span class="s3">&quot;The wxPython module is required to run this program&quot;</span><span class="s1">)</span>
+
+<span class="s0"># you need this one to shut down server and clients correctly</span>
+<span class="s0"># from wx.lib.pubsub import pub</span>
+<span class="s0"># import wx.lib.pubsub</span>
+<span class="s0"># from wx.lib.pubsub import setupkwargs</span>
+<span class="s2">from </span><span class="s1">pubsub </span><span class="s2">import </span><span class="s1">pub</span>
+<span class="s2">import </span><span class="s1">wx.richtext </span><span class="s2">as </span><span class="s1">rt</span>
+
+<span class="s2">import </span><span class="s1">wx.grid</span>
+
+<span class="s2">import </span><span class="s1">wx.lib.colourdb</span>
+
+
+
+<span class="s2">class </span><span class="s1">GuiWindow(wx.Frame):</span>
+    <span class="s0">&quot;&quot;&quot;Construct the window(s) the participants of the experiment see.&quot;&quot;&quot;</span>
+    <span class="s2">def </span><span class="s1">__init__(self, parent, id, title, host, name):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise the GUI window for the participant. 
+ 
+        :param parent   :the parent of this window 
+        :type parent    :wx python object 
+        :param id       :id of the frame, assigned automatically 
+        :type id        :int 
+        :param title    :name of the current window 
+        :type title     :str 
+        :param host     :name of the host 
+        :type host      :str 
+        :param name     :the participant's name 
+        :type name      :str 
+        &quot;&quot;&quot;</span>
+        <span class="s1">self.bufsize = </span><span class="s4">4096</span>
+        <span class="s1">self.host = host</span>
+        <span class="s1">self.port = </span><span class="s4">5000</span>
+
+        <span class="s3">&quot;&quot;&quot;INITIALISING GLOBAL VARIABLES&quot;&quot;&quot;</span>
+        <span class="s0"># name of the participant</span>
+        <span class="s1">self.name = name</span>
+        <span class="s0"># set self.ready to 1 by first message from server</span>
+        <span class="s0"># (means all clients are connected)</span>
+        <span class="s1">self.ready = </span><span class="s4">0</span>
+        <span class="s0"># set stage and role of players</span>
+        <span class="s1">self.stage = </span><span class="s3">&quot;pregame&quot;</span>
+        <span class="s1">self.role = </span><span class="s3">&quot;undecided&quot;</span>
+        <span class="s0"># set image size</span>
+        <span class="s0"># self.image_width = 200</span>
+        <span class="s0"># self.image_height = 200</span>
+        <span class="s1">self.image_width = </span><span class="s4">250</span>
+        <span class="s1">self.image_height = </span><span class="s4">250</span>
+        <span class="s0"># server_end_marker must be the same as in the Server script</span>
+        <span class="s1">self.server_end_marker = </span><span class="s3">&quot;!!!%%%&amp;&amp;&amp;!!!&quot;</span>
+        <span class="s0"># all elements of all sizers are collected in this list</span>
+        <span class="s1">self.elements_in_sizer = []</span>
+        <span class="s0"># path to instructions file given by a server message</span>
+        <span class="s1">self.instructions_file = </span><span class="s3">&quot;&quot;</span>
+        <span class="s0"># the image file(s)</span>
+        <span class="s1">self.image_buttons_1 = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.image_buttons_2 = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.chosen_pic = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.alt_pic = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.listener_chosen_pic = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.pic_for_displaying = </span><span class="s3">&quot;&quot;</span>
+        <span class="s0"># score</span>
+        <span class="s1">self.score = </span><span class="s4">0</span>
+        <span class="s1">self.round_counter = </span><span class="s4">0</span>
+        <span class="s0"># path to the image directory</span>
+        <span class="s1">self.image_path = </span><span class="s3">&quot;&quot;</span>
+        <span class="s0"># collect all sizer elements for clearing them in one</span>
+        <span class="s0"># speaker and listener number for getting the right pairs</span>
+        <span class="s1">self.speaker_no = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.listener_no = </span><span class="s3">&quot;&quot;</span>
+        <span class="s0"># during the practice rounds, each client only has a</span>
+        <span class="s0"># participant number without a role</span>
+        <span class="s1">self.participant_no = </span><span class="s3">&quot;&quot;</span>
+        <span class="s0"># answers of the survey</span>
+        <span class="s1">self.survey_answers = </span><span class="s3">&quot;&quot;</span>
+        <span class="s0"># size of the submit buttons</span>
+        <span class="s1">self.submit_button_size = (</span><span class="s4">500</span><span class="s1">, -</span><span class="s4">1</span><span class="s1">)</span>
+        <span class="s0"># the sentences generated by the speaker are added to this list</span>
+        <span class="s0"># the message decides which state or stage is taken</span>
+        <span class="s1">self.submitted_message = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.round_info = </span><span class="s3">&quot;&quot;</span>
+        <span class="s1">self.practice_over = </span><span class="s2">False</span>
+
+        <span class="s3">&quot;&quot;&quot;SERVER MESSAGES&quot;&quot;&quot;</span>
+        <span class="s0"># identifies special messages from the Server</span>
+        <span class="s1">self.srvr_msg = re.compile(</span><span class="s3">r'9999.*9999(?!\s)'</span><span class="s1">)</span>
+        <span class="s1">self.kill_msg = re.compile(</span><span class="s3">r&quot;.*KILL.*&quot;</span><span class="s1">)</span>
+        <span class="s0"># transfers start of all clients, path to images and client number</span>
+        <span class="s1">self.begin_msg = re.compile(</span><span class="s3">r'9999BEGIN(.*)@(.*)@(.*)@(.*)@(.*)9999(?!\s)'</span><span class="s1">)</span>
+        <span class="s0"># tranfers message from listener: listener number and round info</span>
+        <span class="s1">self.listener_msg = re.compile(</span><span class="s3">r'9999LISTENER(.*)_(.*)9999(?!\s)'</span><span class="s1">)</span>
+        <span class="s1">self.listener_buttons_msg = re.compile(</span><span class="s3">r&quot;9999BUTTONS_LISTENER(.*)@(.*)@(.*)9999&quot;</span><span class="s1">)</span>
+        <span class="s0"># identifies message from speaker: current image, speaker number</span>
+        <span class="s0"># and round info</span>
+        <span class="s1">self.speaker_buttons_msg = re.compile(</span><span class="s3">r&quot;9999BUTTONS_SPEAKER(.*)@(.*)@(.*)9999&quot;</span><span class="s1">)</span>
+        <span class="s0"># a message that is directed to all participants</span>
+        <span class="s1">self.msg_for_all = re.compile(</span><span class="s3">r&quot;9999ALL(.*)@(.*)9999(?!\s)&quot;</span><span class="s1">)</span>
+        <span class="s0"># message that identifies the beginning of the experiment</span>
+        <span class="s0"># (welcome page)</span>
+        <span class="s1">self.welcome_msg = re.compile(</span><span class="s3">r&quot;9999WELCOME(.*)9999(?!\s)&quot;</span><span class="s1">)</span>
+        <span class="s0"># message for listener: the chosen picture</span>
+        <span class="s1">self.pic_from_speaker = re.compile(</span><span class="s3">r&quot;9999PIC(.*)9999(?!\s)&quot;</span><span class="s1">)</span>
+        <span class="s0"># listener response: the guessed picture</span>
+        <span class="s1">self.pic_from_listener = re.compile(</span><span class="s3">r&quot;9999GUESS(.*)9999(?!\s)&quot;</span><span class="s1">)</span>
+        <span class="s0"># coordinates</span>
+        <span class="s1">self.coords_from_speaker = re.compile(</span><span class="s3">r&quot;9999COORD(.*)9999(?!\s)&quot;</span><span class="s1">)</span>
+
+        <span class="s0"># initialise the gui frame</span>
+        <span class="s1">no_resize = wx.DEFAULT_FRAME_STYLE &amp; ~ (wx.RESIZE_BORDER |</span>
+                                                <span class="s1">wx.MAXIMIZE_BOX)</span>
+                                                <span class="s0">#wx.RESIZE_BOX |</span>
+                                                
+
+        <span class="s1">wx.Frame.__init__(self, parent, id, title=</span><span class="s3">&quot;Communication Experiment&quot;</span><span class="s1">,</span>
+                          <span class="s1">size=wx.DisplaySize())</span>
+        <span class="s0"># create the main sizer</span>
+        <span class="s1">self.main_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+        <span class="s0"># self.Show()</span>
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.SetBackgroundColour(</span><span class="s3">&quot;WHITE&quot;</span><span class="s1">)</span>
+
+        <span class="s1">threads = []</span>
+        <span class="s1">self.threads = threads</span>
+        <span class="s1">self.Bind(wx.EVT_CLOSE, self.on_exit_app)</span>
+
+        <span class="s0"># connect the client to the server</span>
+        <span class="s1">self.connect_to_server()</span>
+
+        <span class="s1">self.threads.append(Reader(self.srvsock, self))</span>
+        <span class="s2">for </span><span class="s1">thread </span><span class="s2">in </span><span class="s1">self.threads:</span>
+            <span class="s0"># stops when everything else does</span>
+            <span class="s1">thread.daemon = </span><span class="s2">True</span>
+            <span class="s1">thread.start()</span>
+        
+
+    <span class="s0"># after each window remove the displayed</span>
+    <span class="s0"># elements from the sizer (not only hide them)</span>
+    <span class="s2">def </span><span class="s1">remove_elements_from_sizer(self):</span>
+        <span class="s0">&quot;&quot;&quot;Remove all elements that were stored in the sizer.&quot;&quot;&quot;</span>
+        <span class="s2">for </span><span class="s1">element </span><span class="s2">in </span><span class="s1">self.elements_in_sizer:</span>
+            <span class="s2">try</span><span class="s1">:</span>
+                <span class="s1">element.Hide()</span>
+                <span class="s1">element.Destroy()</span>
+            <span class="s2">except</span><span class="s1">:</span>
+                <span class="s2">pass</span>
+        <span class="s1">self.main_sizer.Clear()</span>
+
+        <span class="s1">self.elements_in_sizer = []</span>
+        <span class="s1">self.Layout()</span>
+
+    <span class="s2">def </span><span class="s1">adjust_dimensions(self, im):</span>
+        <span class="s0">&quot;&quot;&quot;Adjust the dimension of a given image.&quot;&quot;&quot;</span>
+        <span class="s1">width = im.GetWidth()</span>
+        <span class="s1">height = im.GetHeight()</span>
+        <span class="s1">ratio = float(width) / float(height)</span>
+
+        <span class="s1">newwidth = self.image_width * ratio</span>
+        <span class="s1">newheight = self.image_height</span>
+        <span class="s2">return</span><span class="s1">((newwidth, newheight))</span>
+
+    <span class="s2">def </span><span class="s1">welcome_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;The first page of the experiment -- welcomes participant.&quot;&quot;&quot;</span>
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">dummy_panel_1.SetBackgroundColour(</span><span class="s3">&quot;RED&quot;</span><span class="s1">)</span>
+        <span class="s1">welcome_panel = WelcomePage(self)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+        <span class="s1">dummy_panel_2.SetBackgroundColour(</span><span class="s3">&quot;BLUE&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(welcome_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.Show()</span>
+
+    <span class="s2">def </span><span class="s1">survey_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;The questionnaire stage.&quot;&quot;&quot;</span>
+        <span class="s1">self.stage = </span><span class="s3">&quot;survey&quot;</span>
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">questionnaire_panel = QuestionnairePage(self)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(questionnaire_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+
+    <span class="s2">def </span><span class="s1">instruction_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Display a page with instructions.&quot;&quot;&quot;</span>
+        <span class="s1">self.stage = </span><span class="s3">&quot;instructions&quot;</span>
+
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">instructions_panel = InstructionsPage(self)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(instructions_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+
+    <span class="s2">def </span><span class="s1">speaker_buttons_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Create a speaker panel for displaying the image.  (NOT IN USE)&quot;&quot;&quot;</span>
+        <span class="s1">self.role = </span><span class="s3">&quot;speaker&quot;</span>
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">speaker_panel = SpeakerButtonsPanel(self)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(speaker_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(speaker_panel)</span>
+
+    <span class="s2">def </span><span class="s1">speaker_draw_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Stage were speaker has to 'draw' the line on the grid.&quot;&quot;&quot;</span>
+        <span class="s1">print(</span><span class="s3">&quot;In speaker draw stage&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.role = </span><span class="s3">&quot;speaker&quot;</span>
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">drawing_panel = DrawingPage(self)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(drawing_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(drawing_panel)</span>
+
+
+    <span class="s2">def </span><span class="s1">listener_idle_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Display a temporary message for the listener.&quot;&quot;&quot;</span>
+        <span class="s0"># assign role to client</span>
+        <span class="s1">self.role = </span><span class="s3">&quot;listener&quot;</span>
+
+        <span class="s1">msg = </span><span class="s3">&quot;You are waiting on a message transmission from the other player.&quot;</span>
+
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">message_panel = MessagePanel(self, msg)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+    <span class="s2">def </span><span class="s1">speaker_idle_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Display a temporary message for the listener.&quot;&quot;&quot;</span>
+        <span class="s1">msg = </span><span class="s3">&quot;You are waiting on a guess from the other player.&quot;</span>
+
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">message_panel = MessagePanel(self, msg)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+    <span class="s2">def </span><span class="s1">display_pic_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Display the picture chosen by each player.&quot;&quot;&quot;</span>
+        <span class="s2">if </span><span class="s1">self.practice_over == </span><span class="s2">False</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">str(self.pic_for_displaying) == str(self.listener_pic_for_displaying):</span>
+                <span class="s1">msg = </span><span class="s3">&quot;You picked the right map!&quot;</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">msg = </span><span class="s3">&quot;You picked the wrong map!&quot;</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.round_counter += </span><span class="s4">1</span>
+            <span class="s2">if </span><span class="s1">str(self.pic_for_displaying) == str(self.listener_pic_for_displaying):</span>
+                <span class="s1">self.score += </span><span class="s4">1</span>
+                <span class="s1">msg = </span><span class="s3">&quot;You picked the right map!&quot; </span><span class="s0"># originally displayed running score</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">msg = </span><span class="s3">&quot;You picked the wrong map!&quot; </span><span class="s0"># originally displayed running score</span>
+
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+
+        <span class="s2">if </span><span class="s1">self.role == </span><span class="s3">&quot;listener&quot;</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">self.swap:</span>
+                <span class="s1">self.role = </span><span class="s3">&quot;speaker&quot;</span>
+                <span class="s1">self.submitted_message = </span><span class="s3">&quot;6666NEXTROUND6666&quot;</span>
+                <span class="s1">message_panel = MessagePanel(self, msg, </span><span class="s3">&quot;OK&quot;</span><span class="s1">)</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">message_panel = MessagePanel(self,msg)</span>
+        <span class="s2">elif </span><span class="s1">self.role == </span><span class="s3">&quot;speaker&quot;</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">self.swap:</span>
+                <span class="s1">self.role = </span><span class="s3">&quot;listener&quot;</span>
+                <span class="s1">message_panel = MessagePanel(self,msg)</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">self.submitted_message = </span><span class="s3">&quot;6666NEXTROUND6666&quot;</span>
+                <span class="s1">message_panel = MessagePanel(self, msg, </span><span class="s3">&quot;OK&quot;</span><span class="s1">)</span>
+
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+    <span class="s2">def </span><span class="s1">listener_choice_stage(self):</span>
+        <span class="s0"># Take a guess at what the speaker meant</span>
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">listener_panel = ListenerButtonsPanel(self)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(listener_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(listener_panel)</span>
+
+    <span class="s2">def </span><span class="s1">result_stage(self):</span>
+        <span class="s0">&quot;&quot;&quot;Display last message and give opportunity to close frame.&quot;&quot;&quot;</span>
+        <span class="s1">self.stage = </span><span class="s3">&quot;game over&quot;</span>
+        <span class="s1">percentage_score = str(int(round((float(self.score)/float(self.round_counter))*</span><span class="s4">100</span><span class="s1">)))+</span><span class="s3">&quot;%&quot;</span>
+        <span class="s1">msg = </span><span class="s3">&quot;Your final score is %s</span><span class="s5">\n</span><span class="s3">Thank you for participating!&quot; </span><span class="s1">% percentage_score</span>
+        <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+        <span class="s1">message_panel = MessagePanel(self, msg, </span><span class="s3">&quot;close&quot;</span><span class="s1">)</span>
+        <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+        <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+        <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+        <span class="s1">self.SetSizer(self.main_sizer)</span>
+        <span class="s1">self.Layout()</span>
+        <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+
+    <span class="s2">def </span><span class="s1">encode_msg(self, item):</span>
+        <span class="s0">&quot;&quot;&quot;Encode a message for the sever.&quot;&quot;&quot;</span>
+        <span class="s1">encoded_item = item.encode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">) + self.server_end_marker.encode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">)</span>
+        <span class="s0"># encoded_item = item.encode() + self.server_end_marker.encode()</span>
+        <span class="s1">print(</span><span class="s3">&quot;encoded item: &quot;</span><span class="s1">, encoded_item)</span>
+        <span class="s2">return</span><span class="s1">(encoded_item)</span>
+
+    <span class="s2">def </span><span class="s1">submit_message(self):</span>
+        <span class="s0">&quot;&quot;&quot;Send messages to server and/or go to another stage.&quot;&quot;&quot;</span>
+        <span class="s0"># remove all elements from the sizer to be able to establish</span>
+        <span class="s0"># new items</span>
+        <span class="s1">self.remove_elements_from_sizer()</span>
+
+        <span class="s2">if </span><span class="s1">self.ready == </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">self.stage == </span><span class="s3">&quot;instructions&quot;</span><span class="s1">:</span>
+                <span class="s1">msg = </span><span class="s3">&quot;&quot;&quot;Thank you!</span><span class="s5">\n\n</span><span class="s3">The practice rounds will start</span><span class="s5">\n\n</span><span class="s3">when all participants are ready.&quot;&quot;&quot;</span>
+
+                <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+                <span class="s1">message_panel = MessagePanel(self, msg)</span>
+                <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+                <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+                <span class="s1">self.SetSizer(self.main_sizer)</span>
+                <span class="s1">self.Layout()</span>
+                <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+                <span class="s1">utterance = </span><span class="s3">&quot;6666INSTRUCTIONSREAD@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@6666&quot;</span>
+                <span class="s1">encoded_utterance = self.encode_msg(utterance)</span>
+                <span class="s1">self.srvsock.send(encoded_utterance)</span>
+                <span class="s1">self.stage = </span><span class="s3">&quot;&quot;</span>
+
+            <span class="s2">elif </span><span class="s1">self.stage == </span><span class="s3">&quot;survey&quot;</span><span class="s1">:</span>
+                <span class="s1">msg = </span><span class="s3">&quot;&quot;&quot;Please wait one moment, until all participants are ready.</span><span class="s5">\n\n</span><span class="s3">The instructions will be presented to you shortly.&quot;&quot;&quot;</span>
+
+                <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+                <span class="s1">message_panel = MessagePanel(self, msg)</span>
+                <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+                <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+                <span class="s1">self.SetSizer(self.main_sizer)</span>
+                <span class="s1">self.Layout()</span>
+                <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+                <span class="s1">message = (</span><span class="s3">&quot;6666SURVEYCOMPLETED@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.survey_answers +</span>
+                           <span class="s3">&quot;@6666&quot;</span><span class="s1">)</span>
+                <span class="s1">encoded_utterance = self.encode_msg(message)</span>
+                <span class="s1">self.srvsock.send(encoded_utterance)</span>
+
+                <span class="s1">self.stage = </span><span class="s3">&quot;&quot;</span>
+
+            <span class="s2">elif </span><span class="s1">self.stage == </span><span class="s3">&quot;practice over&quot;</span><span class="s1">:</span>
+                <span class="s1">self.practice_over = </span><span class="s2">True</span>
+                <span class="s1">msg = </span><span class="s3">&quot;&quot;&quot;The practice rounds are now completed.</span><span class="s5">\n\n</span><span class="s3">If you have questions, 
+please ask the experimenter.</span><span class="s5">\n\n</span><span class="s3">The experiment will begin when all participants are ready.&quot;&quot;&quot;</span>
+
+                <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+                <span class="s1">message_panel = MessagePanel(self, msg, </span><span class="s3">&quot;OK&quot;</span><span class="s1">)</span>
+                <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+                <span class="s1">self.submitted_message = </span><span class="s3">&quot;6666READYTOSTARTPROPERROUNDS@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@6666&quot;</span>
+                <span class="s1">self.stage = </span><span class="s3">&quot;&quot;</span>
+
+                <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+                <span class="s1">self.SetSizer(self.main_sizer)</span>
+                <span class="s1">self.Layout()</span>
+                <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+            <span class="s2">elif </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;6666READYTOSTARTPROPERROUNDS@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@6666&quot;</span><span class="s1">:</span>
+                <span class="s1">encoded_message = self.encode_msg(self.submitted_message)</span>
+                <span class="s1">self.srvsock.send(encoded_message)</span>
+
+            <span class="s2">elif </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;submit score&quot;</span><span class="s1">:</span>
+                <span class="s1">encoded_message = self.encode_msg(</span><span class="s3">&quot;6666SCORE@&quot; </span><span class="s1">+ str(self.score) + </span><span class="s3">&quot;@6666&quot;</span><span class="s1">)</span>
+                <span class="s1">self.srvsock.send(encoded_message)</span>
+
+            <span class="s2">elif </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;6666NEXTROUND6666&quot;</span><span class="s1">:</span>
+                <span class="s1">encoded_message = self.encode_msg(self.submitted_message)</span>
+                <span class="s1">self.srvsock.send(encoded_message)</span>
+
+            <span class="s2">elif </span><span class="s1">self.role == </span><span class="s3">&quot;speaker&quot;</span><span class="s1">:</span>
+
+                <span class="s2">if </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;pic chosen&quot;</span><span class="s1">: </span><span class="s0">#(NOT IN USE)</span>
+
+                    <span class="s1">utterance = (</span><span class="s3">&quot;6666PIC&quot; </span><span class="s1">+ self.chosen_pic + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@&quot; </span><span class="s1">+</span>
+                                 <span class="s1">str(</span><span class="s4">6666</span><span class="s1">))</span>
+                    <span class="s1">encoded_utterance = self.encode_msg(utterance)</span>
+                    <span class="s1">self.srvsock.send(encoded_utterance)</span>
+
+                <span class="s2">elif </span><span class="s1">type(self.submitted_message) == list:</span>
+                    <span class="s1">utterance = (</span><span class="s3">&quot;6666COORD&quot; </span><span class="s1">+ str(self.submitted_message) + </span><span class="s3">&quot;@&quot; </span><span class="s1">+</span>
+                                <span class="s1">self.name + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ str(</span><span class="s4">6666</span><span class="s1">))</span>
+                    <span class="s1">encoded_utterance = self.encode_msg(utterance)</span>
+                    <span class="s1">self.srvsock.send(encoded_utterance)</span>
+
+                <span class="s2">elif </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;still choosing&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.speaker_buttons_stage()</span>
+
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s2">pass</span>
+
+            <span class="s2">elif </span><span class="s1">self.role == </span><span class="s3">&quot;listener&quot;</span><span class="s1">:</span>
+                <span class="s2">if </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;listener pic chosen&quot;</span><span class="s1">:</span>
+                    <span class="s1">utterance = (</span><span class="s3">&quot;6666GUESS&quot; </span><span class="s1">+ self.listener_chosen_pic + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@&quot; </span><span class="s1">+</span>
+                                 <span class="s1">str(</span><span class="s4">6666</span><span class="s1">))</span>
+                    <span class="s1">encoded_utterance = self.encode_msg(utterance)</span>
+                    <span class="s1">self.srvsock.send(encoded_utterance)</span>
+
+                <span class="s2">elif </span><span class="s1">self.submitted_message == </span><span class="s3">&quot;listener still choosing&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.listener_choice_stage()</span>
+
+
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s2">pass</span>
+
+            <span class="s2">elif </span><span class="s1">self.stage == </span><span class="s3">&quot;game over&quot;</span><span class="s1">:</span>
+                <span class="s1">msg = </span><span class="s3">&quot;6666CLOSED6666&quot;</span>
+                <span class="s1">encoded_message = self.encode_msg(msg)</span>
+                <span class="s1">self.srvsock.send(encoded_message)</span>
+
+                <span class="s1">self.Destroy()</span>
+                <span class="s1">sys.exit()</span>
+
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s0"># TODO: throw exception</span>
+            <span class="s1">print(</span><span class="s3">&quot;something weird is happening&quot;</span><span class="s1">)</span>
+            <span class="s2">pass</span>
+
+    <span class="s2">def </span><span class="s1">incoming_message(self, message):</span>
+        <span class="s0">&quot;&quot;&quot;Function for receiving messages from the server. 
+ 
+        The messages are matched with the 
+        regular expressions defined in __init__. 
+        Each message is a trigger for a state. 
+ 
+        :param message: the incoming message. 
+        :type message: str. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">print(</span><span class="s3">&quot;</span><span class="s5">\n\n\n</span><span class="s3">new incoming message: &quot;</span><span class="s1">, message)</span>
+
+        <span class="s1">self.remove_elements_from_sizer()</span>
+
+        <span class="s2">if </span><span class="s1">re.match(self.srvr_msg, message):</span>
+            <span class="s2">if </span><span class="s1">re.match(self.kill_msg, message):</span>
+                <span class="s1">killmessage = </span><span class="s3">'6666KILL6666'</span>
+                <span class="s1">encoded_killmessage = self.encode_msg(killmessage)</span>
+                <span class="s1">self.srvsock.send(encoded_killmessage)</span>
+                <span class="s1">self.close_up()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.welcome_msg, message):</span>
+                <span class="s1">m = re.match(self.welcome_msg, message)</span>
+                <span class="s1">self.randomization = (m.group(</span><span class="s4">1</span><span class="s1">).split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s4">0</span><span class="s1">] == </span><span class="s3">&quot;True&quot;</span><span class="s1">)</span>
+                <span class="s1">self.hard_mode = (m.group(</span><span class="s4">1</span><span class="s1">).split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s4">1</span><span class="s1">] == </span><span class="s3">&quot;True&quot;</span><span class="s1">)</span>
+                <span class="s1">self.input_type = </span><span class="s3">&quot;dropdown&quot;</span>
+                <span class="s0"># go to welcome stage</span>
+                <span class="s0"># self.input_type = &quot;text entry&quot;</span>
+                <span class="s1">self.welcome_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.msg_for_all, message):</span>
+                <span class="s1">m = re.match(self.msg_for_all, message)</span>
+                <span class="s1">msg = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                <span class="s1">additional_msg = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                <span class="s0"># get image and participant number</span>
+                <span class="s2">if </span><span class="s3">&quot;{&quot; </span><span class="s2">in </span><span class="s1">additional_msg:</span>
+                    <span class="s1">temp_dict = json.loads(additional_msg)</span>
+                    <span class="s1">self.participant_no = temp_dict[</span><span class="s3">&quot;player&quot;</span><span class="s1">]</span>
+                    <span class="s2">del </span><span class="s1">temp_dict[</span><span class="s3">&quot;player&quot;</span><span class="s1">]</span>
+                    <span class="s1">self.image_dict = temp_dict</span>
+
+                <span class="s2">if </span><span class="s1">msg == </span><span class="s3">&quot;IMAGEPATH&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.image_path = additional_msg</span>
+
+                <span class="s2">elif </span><span class="s1">msg == </span><span class="s3">&quot;INSTRUCTIONS&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.instruction_stage()</span>
+
+                <span class="s2">elif </span><span class="s1">msg == </span><span class="s3">&quot;PRACTICEROUND&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.image_buttons_1 = additional_msg.split(</span><span class="s3">&quot;=&quot;</span><span class="s1">)[</span><span class="s4">0</span><span class="s1">]</span>
+                    <span class="s1">self.image_buttons_2 = additional_msg.split(</span><span class="s3">&quot;=&quot;</span><span class="s1">)[</span><span class="s4">1</span><span class="s1">]</span>
+                    <span class="s1">self.chosen_pic = self.image_buttons_1</span>
+                    <span class="s1">self.alt_pic = self.image_buttons_2</span>
+                    <span class="s1">self.pic_for_displaying = self.chosen_pic</span>
+
+                    <span class="s2">if </span><span class="s1">self.role == </span><span class="s3">&quot;speaker&quot;</span><span class="s1">:</span>
+                        <span class="s1">image_string = </span><span class="s3">&quot;6666&quot; </span><span class="s1">+ self.chosen_pic + </span><span class="s3">&quot;|||&quot; </span><span class="s1">+ self.alt_pic + </span><span class="s3">&quot;6666&quot;</span>
+                        <span class="s1">encoded_string = self.encode_msg(image_string)</span>
+                        <span class="s1">self.srvsock.send(encoded_string)</span>
+                        <span class="s1">utterance = (</span><span class="s3">&quot;6666PIC&quot; </span><span class="s1">+ self.chosen_pic + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ str(</span><span class="s4">6666</span><span class="s1">))</span>
+                        <span class="s1">encoded_utterance = self.encode_msg(utterance)</span>
+                        <span class="s1">self.srvsock.send(encoded_utterance)</span>
+                        <span class="s0">#self.speaker_buttons_stage()</span>
+                        <span class="s1">self.speaker_draw_stage()</span>
+                    <span class="s2">elif </span><span class="s1">self.role == </span><span class="s3">&quot;listener&quot;</span><span class="s1">:</span>
+                        <span class="s1">self.listener_idle_stage()</span>
+
+                <span class="s2">elif </span><span class="s1">msg == </span><span class="s3">&quot;PROPERROUND&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.stage = </span><span class="s3">&quot;game&quot;</span>
+                    <span class="s1">self.image_buttons_1 = additional_msg.split(</span><span class="s3">&quot;=&quot;</span><span class="s1">)[</span><span class="s4">0</span><span class="s1">]</span>
+                    <span class="s1">self.image_buttons_2 = additional_msg.split(</span><span class="s3">&quot;=&quot;</span><span class="s1">)[</span><span class="s4">1</span><span class="s1">]</span>
+                    <span class="s1">self.chosen_pic = self.image_buttons_1</span>
+                    <span class="s1">self.alt_pic = self.image_buttons_2</span>
+                    <span class="s1">self.pic_for_displaying = self.chosen_pic</span>
+
+                    <span class="s2">if </span><span class="s1">self.role == </span><span class="s3">&quot;speaker&quot;</span><span class="s1">:</span>
+                        <span class="s1">image_string = </span><span class="s3">&quot;6666&quot; </span><span class="s1">+ self.chosen_pic + </span><span class="s3">&quot;|||&quot; </span><span class="s1">+ self.alt_pic + </span><span class="s3">&quot;6666&quot;</span>
+                        <span class="s1">encoded_string = self.encode_msg(image_string)</span>
+                        <span class="s1">self.srvsock.send(encoded_string)</span>
+                        <span class="s1">utterance = (</span><span class="s3">&quot;6666PIC&quot; </span><span class="s1">+ self.chosen_pic + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;@&quot; </span><span class="s1">+ str(</span><span class="s4">6666</span><span class="s1">))</span>
+                        <span class="s1">encoded_utterance = self.encode_msg(utterance)</span>
+                        <span class="s1">self.srvsock.send(encoded_utterance)</span>
+                        <span class="s0">#self.speaker_buttons_stage()</span>
+                        <span class="s1">self.speaker_draw_stage()</span>
+                    <span class="s2">elif </span><span class="s1">self.role == </span><span class="s3">&quot;listener&quot;</span><span class="s1">:</span>
+                        <span class="s1">self.listener_idle_stage()</span>
+
+                <span class="s2">elif </span><span class="s1">msg == </span><span class="s3">&quot;PRACTICEOVER&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.stage = </span><span class="s3">&quot;practice over&quot;</span>
+                    <span class="s1">self.submit_message()</span>
+
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">print(</span><span class="s3">&quot;WEIRD MESSAGE&quot;</span><span class="s1">)</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.speaker_buttons_msg, message):</span>
+
+                <span class="s1">m = re.match(self.speaker_buttons_msg, message)</span>
+
+                <span class="s1">self.speaker_no = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                <span class="s1">self.image_buttons_1 = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                <span class="s1">self.image_buttons_2 = m.group(</span><span class="s4">3</span><span class="s1">)</span>
+
+                <span class="s1">self.speaker_buttons_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.listener_buttons_msg, message):</span>
+
+                <span class="s1">m = re.match(self.listener_buttons_msg, message)</span>
+
+                <span class="s1">self.listener_no = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                <span class="s1">self.image_buttons_1 = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                <span class="s1">self.image_buttons_2 = m.group(</span><span class="s4">3</span><span class="s1">)</span>
+
+                <span class="s1">self.listener_idle_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.listener_msg, message):</span>
+                <span class="s1">m = re.match(self.listener_msg, message)</span>
+
+                <span class="s1">self.listener_no = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+
+                <span class="s1">self.round_info = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                <span class="s1">self.listener_idle_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.pic_from_speaker, message):</span>
+                <span class="s1">m = re.match(self.pic_from_speaker, message)</span>
+                <span class="s1">self.pic_for_displaying = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.pic_from_listener, message):</span>
+                <span class="s1">m = re.match(self.pic_from_listener, message)</span>
+                <span class="s1">self.listener_pic_for_displaying = m.group(</span><span class="s4">1</span><span class="s1">)</span>
+                <span class="s1">self.display_pic_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.coords_from_speaker, message):</span>
+                <span class="s1">m = re.match(self.coords_from_speaker, message)</span>
+                <span class="s1">self.speaker_coords = json.loads(m.group(</span><span class="s4">1</span><span class="s1">))</span>
+                <span class="s2">if </span><span class="s1">self.role == </span><span class="s3">&quot;listener&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.listener_choice_stage()</span>
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">self.speaker_idle_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">message == </span><span class="s3">&quot;9999ONLYONEPLAYERREADY9999&quot;</span><span class="s1">:</span>
+                <span class="s2">if </span><span class="s1">self.stage != </span><span class="s3">&quot;game&quot;</span><span class="s1">:</span>
+                    <span class="s1">msg = </span><span class="s3">&quot;&quot;&quot;Waiting on the other player...&quot;&quot;&quot;</span>
+
+                    <span class="s1">dummy_panel_1 = DummyPanel(self)</span>
+                    <span class="s1">message_panel = MessagePanel(self, msg)</span>
+                    <span class="s1">dummy_panel_2 = DummyPanel(self)</span>
+
+                    <span class="s1">self.main_sizer.Add(dummy_panel_1, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                    <span class="s1">self.main_sizer.Add(message_panel, </span><span class="s4">0</span><span class="s1">, wx.ALIGN_CENTER)</span>
+                    <span class="s1">self.main_sizer.Add(dummy_panel_2, </span><span class="s4">1</span><span class="s1">, wx.ALIGN_CENTER)</span>
+
+                    <span class="s1">self.SetSizer(self.main_sizer)</span>
+                    <span class="s1">self.Layout()</span>
+                    <span class="s1">self.elements_in_sizer.append(message_panel)</span>
+
+            <span class="s2">elif </span><span class="s1">message == </span><span class="s3">&quot;9999GAMEOVER9999&quot;</span><span class="s1">:</span>
+                <span class="s1">self.submitted_message = </span><span class="s3">&quot;submit score&quot;</span>
+                <span class="s1">self.submit_message()</span>
+                <span class="s1">self.result_stage()</span>
+
+            <span class="s2">elif </span><span class="s1">re.match(self.begin_msg, message):</span>
+                <span class="s1">m = re.match(self.begin_msg, message)</span>
+
+                <span class="s0"># m is the string list, group() returns tuple of specified index?</span>
+                <span class="s1">self.client_number = int(m.group(</span><span class="s4">1</span><span class="s1">))</span>
+                <span class="s1">self.image_path = m.group(</span><span class="s4">2</span><span class="s1">)</span>
+                <span class="s1">self.ClickThreshold = m.group(</span><span class="s4">3</span><span class="s1">)</span>
+                <span class="s1">self.SecondsGiven = m.group(</span><span class="s4">4</span><span class="s1">)</span>
+                <span class="s1">swap_param = m.group(</span><span class="s4">5</span><span class="s1">)</span>
+                <span class="s2">if </span><span class="s1">swap_param == </span><span class="s3">&quot;True&quot;</span><span class="s1">:</span>
+                    <span class="s1">self.swap = </span><span class="s2">True</span>
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">self.swap = </span><span class="s2">False</span>
+
+                <span class="s2">if </span><span class="s1">self.client_number == </span><span class="s4">0</span><span class="s1">:</span>
+                    <span class="s1">self.role = </span><span class="s3">&quot;speaker&quot;</span>
+                    <span class="s1">self.instructions_file = </span><span class="s3">&quot;instructions_S.txt&quot;</span>
+                <span class="s2">elif </span><span class="s1">self.client_number == </span><span class="s4">1</span><span class="s1">:</span>
+                    <span class="s1">self.role = </span><span class="s3">&quot;listener&quot;</span>
+                    <span class="s1">self.instructions_file = </span><span class="s3">&quot;instructions_L.txt&quot;</span>
+
+                <span class="s2">if </span><span class="s1">self.swap:</span>
+                    <span class="s1">self.instructions_file = </span><span class="s3">&quot;instructions.txt&quot;</span>
+
+                <span class="s2">if </span><span class="s1">self.ready == </span><span class="s4">0</span><span class="s1">:</span>
+                    <span class="s1">self.ready = </span><span class="s4">1</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s0"># TODO: throw exception</span>
+                <span class="s1">print(</span><span class="s3">&quot;this is a message with which I can't do anything:&quot;</span><span class="s1">,</span>
+                      <span class="s1">message)</span>
+
+    <span class="s2">def </span><span class="s1">on_submit(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Send a submit message.&quot;&quot;&quot;</span>
+        <span class="s1">self.submit_message()</span>
+
+    <span class="s2">def </span><span class="s1">connect_to_server(self):</span>
+        <span class="s0">&quot;&quot;&quot;Connect the client to the server.&quot;&quot;&quot;</span>
+        <span class="s1">srvsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span>
+        <span class="s1">self.srvsock = srvsock</span>
+        <span class="s1">srvsock.connect((self.host.strip(), self.port))</span>
+        <span class="s1">participant_info = </span><span class="s3">&quot;6666INFO&quot; </span><span class="s1">+ self.name + </span><span class="s3">&quot;6666&quot;</span>
+        <span class="s1">encoded_info = self.encode_msg(participant_info)</span>
+        <span class="s1">srvsock.send(encoded_info)</span>
+
+    <span class="s2">def </span><span class="s1">close_up(self):</span>
+        <span class="s0">&quot;&quot;&quot;Close everything.&quot;&quot;&quot;</span>
+        <span class="s1">self.srvsock.close()</span>
+        <span class="s1">msg = </span><span class="s3">&quot;closing client&quot;</span>
+        <span class="s1">pub.sendMessage(</span><span class="s3">&quot;clientclosed&quot;</span><span class="s1">, data=msg)</span>
+        <span class="s1">self.Destroy()</span>
+        <span class="s1">sys.exit()</span>
+
+        <span class="s0"># comment this section out if you don't want run_client to remember</span>
+        <span class="s0"># the ip next time</span>
+        <span class="s0"># try:</span>
+        <span class="s0"># os.remove('temp_ip')</span>
+        <span class="s0"># except(WindowsError):</span>
+        <span class="s0"># pass</span>
+
+    <span class="s2">def </span><span class="s1">on_exit_app(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;A dummy function that runs if user tries to close the gui.&quot;&quot;&quot;</span>
+        <span class="s2">pass</span>
+
+<span class="s3">&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot; 
+QUESTIONNAIRE PAGE 
+&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+
+<span class="s2">class </span><span class="s1">QuestionnairePage(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for the questionnaire.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise panel.&quot;&quot;&quot;</span>
+        <span class="s0"># variables for survey</span>
+        <span class="s1">self.all_survey_questions = []</span>
+        <span class="s1">self.survey_dict = {</span><span class="s3">&quot;Native language&quot;</span><span class="s1">: </span><span class="s3">&quot;&quot;</span><span class="s1">,</span>
+                            <span class="s3">&quot;Main area of study&quot;</span><span class="s1">: </span><span class="s3">&quot;&quot;</span><span class="s1">}</span>
+        <span class="s1">self.survey_answer_boxes = {}</span>
+
+        <span class="s0"># initialise panel</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+
+        <span class="s1">self.gui = parent</span>
+
+        <span class="s0"># initialise error message</span>
+        <span class="s1">self.error_message_show = </span><span class="s2">False</span>
+
+        <span class="s1">self.warning_pos = </span><span class="s4">0</span>
+        <span class="s1">self.error_message = wx.StaticText(self, wx.ID_ANY, </span><span class="s3">&quot;&quot;</span><span class="s1">)</span>
+        <span class="s1">self.error_message.SetFont(wx.Font(</span><span class="s4">10</span><span class="s1">, wx.DEFAULT,</span>
+                                   <span class="s1">wx.NORMAL, wx.BOLD))</span>
+        <span class="s1">self.error_message.SetForegroundColour(wx.RED)</span>
+
+        <span class="s1">self.gui.elements_in_sizer.append(self.error_message)</span>
+
+        <span class="s1">self.add_survey_questions()</span>
+        <span class="s1">self.add_survey_submit_button()</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s0"># self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+    <span class="s2">def </span><span class="s1">add_survey_questions(self):</span>
+        <span class="s0">&quot;&quot;&quot;Add survey questions to the window.&quot;&quot;&quot;</span>
+        <span class="s1">text_1 = </span><span class="s3">&quot;Please begin by answering the following questions.</span><span class="s5">\n\n</span><span class="s3">&quot;</span>
+
+        <span class="s1">start_text = wx.StaticText(self, label=text_1)</span>
+        <span class="s1">start_text.SetFont(wx.Font(</span><span class="s4">14</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                   <span class="s1">wx.BOLD))</span>
+        <span class="s1">self.all_survey_questions.append(start_text)</span>
+
+        <span class="s0"># question 1</span>
+        <span class="s1">question_1_text = </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">1. Native language</span><span class="s5">\n</span><span class="s3">&quot;</span>
+        <span class="s1">question_1 = wx.StaticText(self, label=question_1_text)</span>
+        <span class="s1">question_1.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                   <span class="s1">wx.NORMAL))</span>
+        <span class="s1">self.all_survey_questions.append(question_1)</span>
+
+        <span class="s0"># answer 1</span>
+        <span class="s1">language_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(</span><span class="s4">150</span><span class="s1">, </span><span class="s4">30</span><span class="s1">),</span>
+                                <span class="s1">style=wx.TE_MULTILINE)</span>
+        <span class="s1">self.all_survey_questions.append(language_box)</span>
+        <span class="s1">self.survey_answer_boxes[</span><span class="s3">&quot;Native language&quot;</span><span class="s1">] = language_box</span>
+
+        <span class="s0"># question 2</span>
+        <span class="s1">question_2_text = </span><span class="s3">&quot;</span><span class="s5">\n</span><span class="s3">2. Main area of study</span><span class="s5">\n</span><span class="s3">&quot;</span>
+        <span class="s1">question_2 = wx.StaticText(self, label=question_2_text)</span>
+        <span class="s1">question_2.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                   <span class="s1">wx.NORMAL))</span>
+        <span class="s1">self.all_survey_questions.append(question_2)</span>
+
+        <span class="s0"># answer 2</span>
+        <span class="s1">study_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(</span><span class="s4">150</span><span class="s1">, </span><span class="s4">30</span><span class="s1">),</span>
+                                <span class="s1">style=wx.TE_MULTILINE)</span>
+        <span class="s1">self.all_survey_questions.append(study_box)</span>
+        <span class="s1">self.survey_answer_boxes[</span><span class="s3">&quot;Main area of study&quot;</span><span class="s1">] = study_box</span>
+
+        <span class="s1">dummy_1 = wx.StaticText(self, label=</span><span class="s3">&quot;&quot;</span><span class="s1">)</span>
+
+        <span class="s0"># # collect all objects in list</span>
+        <span class="s0"># add all items to the sizer</span>
+        <span class="s1">self.box_sizer.Add(start_text, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(question_1, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(language_box, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(dummy_1, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(question_2, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(study_box, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s2">for </span><span class="s1">question </span><span class="s2">in </span><span class="s1">self.all_survey_questions:</span>
+            <span class="s1">question.Show()</span>
+            <span class="s1">self.gui.elements_in_sizer.append(question)</span>
+
+    <span class="s2">def </span><span class="s1">add_survey_submit_button(self):</span>
+        <span class="s0">&quot;&quot;&quot;Add the submit button for the questionnaire.&quot;&quot;&quot;</span>
+        <span class="s1">label = </span><span class="s3">&quot;Submit&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+
+        <span class="s1">dummy = wx.StaticText(self, label=</span><span class="s3">&quot;&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.box_sizer.Add(dummy, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s1">self.box_sizer.Add(self.error_message, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.error_message.Hide()</span>
+        <span class="s1">self.box_sizer.Add(submit_button, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.on_survey_submit)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">on_survey_submit(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Check if all required answers were given and proceeds.&quot;&quot;&quot;</span>
+        <span class="s2">if </span><span class="s1">self.get_survey_answers():</span>
+            <span class="s1">self.Hide()</span>
+            <span class="s1">self.gui.submit_message()</span>
+
+    <span class="s2">def </span><span class="s1">on_survey_text_box(self, key):</span>
+        <span class="s2">for </span><span class="s1">que, answer </span><span class="s2">in </span><span class="s1">self.survey_answer_boxes.items():</span>
+            <span class="s2">if </span><span class="s1">que == key:</span>
+                <span class="s2">return</span><span class="s1">(str(answer.GetValue()))</span>
+
+    <span class="s2">def </span><span class="s1">get_survey_answers(self):</span>
+        <span class="s0">&quot;&quot;&quot;Get answers of questionnaire.&quot;&quot;&quot;</span>
+        <span class="s0"># get answers from survey questions</span>
+        <span class="s0"># question 3, 4</span>
+        <span class="s1">study = self.on_survey_text_box(</span><span class="s3">&quot;Main area of study&quot;</span><span class="s1">)</span>
+        <span class="s2">if </span><span class="s1">study == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+            <span class="s1">self.survey_dict[</span><span class="s3">&quot;Main area of study&quot;</span><span class="s1">] = </span><span class="s3">&quot;none given&quot;</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.survey_dict[</span><span class="s3">&quot;Main area of study&quot;</span><span class="s1">] = self.on_survey_text_box(</span><span class="s3">&quot;Main area of study&quot;</span><span class="s1">)</span>
+
+        <span class="s1">language = self.on_survey_text_box(</span><span class="s3">&quot;Native language&quot;</span><span class="s1">)</span>
+        <span class="s0">#if language == &quot;&quot;:</span>
+        <span class="s0">#    if not self.error_message_show:</span>
+
+        <span class="s0">#        warning = &quot;&quot;&quot;Please supply your native language.&quot;&quot;&quot;</span>
+        <span class="s0">#        self.add_warning(warning)</span>
+        <span class="s0">#        self.error_message_show = True</span>
+
+        <span class="s0">#    return(False)</span>
+        <span class="s0">#else:</span>
+        <span class="s2">if </span><span class="s4">1 </span><span class="s1">== </span><span class="s4">1</span><span class="s1">: </span><span class="s0"># &lt;--delete this line if block above is reinstated</span>
+            <span class="s2">if </span><span class="s1">language == </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                <span class="s1">self.survey_dict[</span><span class="s3">&quot;Native language&quot;</span><span class="s1">] = </span><span class="s3">&quot;none given&quot;</span>
+            <span class="s2">else</span><span class="s1">:</span>
+                <span class="s1">self.survey_dict[</span><span class="s3">&quot;Native language&quot;</span><span class="s1">] = self.on_survey_text_box(</span><span class="s3">&quot;Native language&quot;</span><span class="s1">)</span>
+
+            <span class="s1">answers = []</span>
+            <span class="s2">for </span><span class="s1">qu, answ </span><span class="s2">in </span><span class="s1">self.survey_dict.items():</span>
+                <span class="s1">string = qu + </span><span class="s3">&quot;: &quot; </span><span class="s1">+ answ </span><span class="s0">#.decode('utf-8')</span>
+                <span class="s1">answers.append(string)</span>
+            <span class="s1">self.gui.survey_answers = </span><span class="s3">&quot;, &quot;</span><span class="s1">.join(answers)</span>
+            <span class="s2">return</span><span class="s1">(</span><span class="s2">True</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">add_warning(self, warning):</span>
+        <span class="s0">&quot;&quot;&quot;Display a warning message.&quot;&quot;&quot;</span>
+        <span class="s0"># if there are already displayed warnings</span>
+        <span class="s0"># hide them</span>
+        <span class="s2">if </span><span class="s1">self.error_message_show:</span>
+            <span class="s1">self.error_message.Hide()</span>
+
+        <span class="s1">self.error_message.SetLabel(warning)</span>
+        <span class="s1">self.error_message.Show()</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+
+
+<span class="s3">&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot; 
+WELCOME PAGE 
+&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+
+<span class="s2">class </span><span class="s1">WelcomePage(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for the welcome page.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise panel with welcome message.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s0"># self.grid_sizer = wx.GridBagSizer()</span>
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+
+        <span class="s1">self.gui = parent</span>
+        <span class="s1">welcome_text = </span><span class="s3">&quot;Welcome!</span><span class="s5">\n</span><span class="s3">&quot;</span>
+
+        <span class="s1">introduction_text = </span><span class="s3">&quot;&quot;&quot;Please click start when you're ready</span><span class="s5">\n\n\n</span><span class="s3">&quot;&quot;&quot;</span>
+
+        <span class="s1">welcome = wx.StaticText(self, label=welcome_text)</span>
+
+        <span class="s1">welcome.SetFont(wx.Font(</span><span class="s4">14</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                <span class="s1">wx.BOLD))</span>
+        <span class="s1">welcome.Show()</span>
+
+        <span class="s1">introduction = wx.StaticText(self, label=introduction_text)</span>
+
+        <span class="s1">introduction.SetFont(wx.Font(</span><span class="s4">11</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                             <span class="s1">wx.NORMAL))</span>
+        <span class="s1">introduction.Show()</span>
+
+        <span class="s1">self.box_sizer.Add(welcome, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(introduction, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s1">self.gui.elements_in_sizer.extend([welcome, introduction])</span>
+        <span class="s1">self.add_welcome_submit_button()</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s0"># self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+    <span class="s2">def </span><span class="s1">add_welcome_submit_button(self):</span>
+        <span class="s0">&quot;&quot;&quot;Add submit button for very first page.&quot;&quot;&quot;</span>
+        <span class="s1">label = </span><span class="s3">&quot;Start&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+
+        <span class="s1">self.box_sizer.Add(submit_button, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.on_welcome_submit)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">on_welcome_submit(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Go to next page when user presses submit button.&quot;&quot;&quot;</span>
+        <span class="s1">self.gui.remove_elements_from_sizer()</span>
+        <span class="s1">self.Hide()</span>
+        <span class="s1">self.gui.survey_stage()</span>
+
+
+<span class="s2">class </span><span class="s1">ListenerButtonsPanel(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for displaying two pictures.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise images etc.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.gui = parent</span>
+
+        <span class="s1">self.speaker_coords = self.gui.speaker_coords</span>
+        <span class="s1">self.grid_size = </span><span class="s4">7</span>
+
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+        <span class="s1">self.grid_sizer = wx.FlexGridSizer(</span><span class="s4">2</span><span class="s1">,</span><span class="s4">2</span><span class="s1">)</span>
+
+        <span class="s1">self.add_grid()</span>
+        <span class="s1">images = [self.gui.image_buttons_1, self.gui.image_buttons_2]</span>
+        <span class="s1">images = random.sample(images,len(images))</span>
+        <span class="s1">self.gui.image_buttons_1 = images[</span><span class="s4">0</span><span class="s1">]</span>
+        <span class="s1">self.gui.image_buttons_2 = images[</span><span class="s4">1</span><span class="s1">]</span>
+        <span class="s1">self.add_images(self.gui.image_buttons_1, self.gui.image_buttons_2)</span>
+        <span class="s1">self.add_radio_box()</span>
+        <span class="s1">self.box_sizer.Add(self.grid_sizer, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.add_submit_button(</span><span class="s3">&quot;OK&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s1">self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+    <span class="s2">def </span><span class="s1">add_grid(self):</span>
+        <span class="s1">grid_coords = []</span>
+        <span class="s2">for </span><span class="s1">i, value </span><span class="s2">in </span><span class="s1">enumerate(self.speaker_coords):</span>
+            <span class="s2">if </span><span class="s1">value == </span><span class="s4">1</span><span class="s1">:</span>
+                <span class="s1">grid_coords.append([int(i/self.grid_size), i%self.grid_size])</span>
+
+        <span class="s1">self.message_sizer = wx.BoxSizer(wx.HORIZONTAL)</span>
+        <span class="s1">self.grid = wx.grid.Grid(self, -</span><span class="s4">1</span><span class="s1">, style=wx.BORDER_SIMPLE)</span>
+        <span class="s1">self.grid_list = []</span>
+        <span class="s0">#self.box_sizer.Add(self.grid,0)</span>
+        <span class="s1">self.grid.CreateGrid(</span><span class="s4">7</span><span class="s1">,</span><span class="s4">7</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetDefaultRowSize(</span><span class="s4">40</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetDefaultColSize(</span><span class="s4">40</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetRowLabelSize(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetColLabelSize(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetCellHighlightROPenWidth(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid.ShowScrollbars(wx.SHOW_SB_NEVER,wx.SHOW_SB_NEVER)</span>
+        <span class="s0">#self.grid.AutoSize() # &lt;--This may have to change</span>
+
+        <span class="s2">for </span><span class="s1">m </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">0</span><span class="s1">,</span><span class="s4">7</span><span class="s1">):</span>
+            <span class="s1">self.grid_list.append([])</span>
+            <span class="s2">for </span><span class="s1">n </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">0</span><span class="s1">,</span><span class="s4">7</span><span class="s1">):</span>
+                <span class="s1">self.grid_list[m].append([])</span>
+                <span class="s1">self.grid.SetReadOnly(m,n)</span>
+                <span class="s1">self.grid.SetCellValue(m,n,str(</span><span class="s3">&quot;&quot;</span><span class="s1">))</span>
+                <span class="s2">if </span><span class="s1">[m,n] </span><span class="s2">in </span><span class="s1">grid_coords:</span>
+                    <span class="s1">self.grid.SetCellBackgroundColour(m, n, wx.BLACK)</span>
+
+        <span class="s1">self.message_sizer.Add(wx.StaticText(self, label = </span><span class="s3">&quot;Time to guess!  Your partner has sent you the following grid image:  &quot;</span><span class="s1">), </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.message_sizer.Add(self.grid, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(self.message_sizer, </span><span class="s4">0</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">add_images(self, pic_1, pic_2):</span>
+        <span class="s0">&quot;&quot;&quot;Add image to frame.&quot;&quot;&quot;</span>
+        <span class="s0"># the image file is transmitted via message from</span>
+        <span class="s0"># server to client</span>
+
+        <span class="s0">#image_sizer = wx.BoxSizer(wx.HORIZONTAL)</span>
+        <span class="s1">image_path_1 = os.path.join(self.gui.image_path, pic_1)</span>
+        <span class="s1">image_path_2 = os.path.join(self.gui.image_path,pic_2)</span>
+
+        <span class="s1">im_1 = wx.Image(image_path_1)</span>
+        <span class="s1">im_2 = wx.Image(image_path_2)</span>
+
+        <span class="s1">dimensions_1 = self.gui.adjust_dimensions(im_1)</span>
+        <span class="s1">im_1.Rescale(dimensions_1[</span><span class="s4">0</span><span class="s1">], dimensions_1[</span><span class="s4">1</span><span class="s1">])</span>
+
+        <span class="s1">dimensions_2 = self.gui.adjust_dimensions(im_2)</span>
+        <span class="s1">im_2.Rescale(dimensions_2[</span><span class="s4">0</span><span class="s1">], dimensions_2[</span><span class="s4">1</span><span class="s1">])</span>
+
+        <span class="s1">bmap_1 = wx.Bitmap(im_1)</span>
+        <span class="s1">bmap_2 = wx.Bitmap(im_2)</span>
+
+        <span class="s1">image_1 = wx.StaticBitmap(self, wx.ID_ANY, bmap_1)</span>
+        <span class="s1">image_2 = wx.StaticBitmap(self, wx.ID_ANY, bmap_2)</span>
+
+        <span class="s0">#image_sizer.Add(image_1, 0)</span>
+        <span class="s0">#image_sizer.Add(image_2, 0)</span>
+        <span class="s1">self.grid_sizer.Add(image_1, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid_sizer.Add(image_2, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s0">#self.box_sizer.Add(image_sizer, 0)</span>
+        <span class="s1">self.gui.elements_in_sizer.extend([image_1, image_2])</span>
+
+    <span class="s2">def </span><span class="s1">add_radio_box(self):</span>
+        <span class="s0">&quot;&quot;&quot;Add two radio buttons for image selection.&quot;&quot;&quot;</span>
+        <span class="s0">#buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)</span>
+
+        <span class="s1">self.radio_a = wx.RadioButton(self, wx.ID_ANY, label=</span><span class="s3">&quot;Picture A&quot;</span><span class="s1">,</span>
+                                      <span class="s1">style=wx.RB_GROUP)</span>
+        <span class="s1">self.radio_a.SetFont(wx.Font(</span><span class="s4">10.0</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.radio_b = wx.RadioButton(self, wx.ID_ANY, label=</span><span class="s3">&quot;Picture B&quot;</span><span class="s1">)</span>
+        <span class="s1">self.radio_b.SetFont(wx.Font(</span><span class="s4">10.0</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.NORMAL))</span>
+
+        <span class="s0">#buttons_sizer.Add(self.radio_a, 0)</span>
+        <span class="s0">#buttons_sizer.Add(self.radio_b, 0)</span>
+        <span class="s1">self.grid_sizer.Add(self.radio_a, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid_sizer.Add(self.radio_b, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s0">#self.box_sizer.Add(buttons_sizer, 0)</span>
+        <span class="s1">self.gui.elements_in_sizer.extend([self.radio_a, self.radio_b])</span>
+
+    <span class="s2">def </span><span class="s1">add_submit_button(self, label):</span>
+        <span class="s0">&quot;&quot;&quot;Add a submit button. Its position is set. 
+ 
+        :param label: the text written on the button. 
+        :type label: str. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+        <span class="s1">self.box_sizer.Add(submit_button, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s0"># when the participant clicks on the button, the on_submit()</span>
+        <span class="s0"># method is called</span>
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.on_picture_choice)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">on_picture_choice(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Get the values of the radio boxes.&quot;&quot;&quot;</span>
+        <span class="s1">self.gui.submitted_message = </span><span class="s3">&quot;listener pic chosen&quot;</span>
+        <span class="s2">if </span><span class="s1">self.radio_a.GetValue():</span>
+            <span class="s1">self.gui.listener_chosen_pic = self.gui.image_buttons_1</span>
+            <span class="s1">self.Hide()</span>
+            <span class="s1">self.gui.submit_message()</span>
+        <span class="s2">elif </span><span class="s1">self.radio_b.GetValue():</span>
+            <span class="s1">self.gui.listener_chosen_pic = self.gui.image_buttons_2</span>
+            <span class="s1">self.Hide()</span>
+            <span class="s1">self.gui.submit_message()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.gui.submitted_message = </span><span class="s3">&quot;listener still choosing&quot; </span><span class="s0">#now redundant</span>
+
+
+
+<span class="s2">class </span><span class="s1">SpeakerButtonsPanel(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for displaying two pictures.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise images etc.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.gui = parent</span>
+
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+        <span class="s1">self.grid_sizer = wx.FlexGridSizer(</span><span class="s4">2</span><span class="s1">,</span><span class="s4">2</span><span class="s1">)</span>
+
+        <span class="s1">self.add_images(self.gui.image_buttons_1, self.gui.image_buttons_2)</span>
+        <span class="s1">self.add_radio_box()</span>
+        <span class="s1">self.box_sizer.Add(self.grid_sizer, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.add_submit_button(</span><span class="s3">&quot;OK&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s1">self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+    <span class="s2">def </span><span class="s1">add_images(self, pic_1, pic_2):</span>
+        <span class="s0">&quot;&quot;&quot;Add image to frame.&quot;&quot;&quot;</span>
+        <span class="s0"># the image file is transmitted via message from</span>
+        <span class="s0"># server to client</span>
+
+        <span class="s0">#image_sizer = wx.BoxSizer(wx.HORIZONTAL)</span>
+        <span class="s1">image_path_1 = os.path.join(self.gui.image_path,pic_1)</span>
+        <span class="s1">image_path_2 = os.path.join(self.gui.image_path,pic_2)</span>
+
+        <span class="s1">image_string = </span><span class="s3">&quot;6666&quot; </span><span class="s1">+ pic_1 + </span><span class="s3">&quot;|||&quot; </span><span class="s1">+ pic_2 + </span><span class="s3">&quot;6666&quot;</span>
+        <span class="s1">encoded_string = self.gui.encode_msg(image_string)</span>
+        <span class="s1">self.gui.srvsock.send(encoded_string)</span>
+
+        <span class="s1">im_1 = wx.Image(image_path_1)</span>
+        <span class="s1">im_2 = wx.Image(image_path_2)</span>
+
+        <span class="s1">dimensions_1 = self.gui.adjust_dimensions(im_1)</span>
+        <span class="s1">im_1.Rescale(dimensions_1[</span><span class="s4">0</span><span class="s1">], dimensions_1[</span><span class="s4">1</span><span class="s1">])</span>
+
+        <span class="s1">dimensions_2 = self.gui.adjust_dimensions(im_2)</span>
+        <span class="s1">im_2.Rescale(dimensions_2[</span><span class="s4">0</span><span class="s1">], dimensions_2[</span><span class="s4">1</span><span class="s1">])</span>
+
+        <span class="s1">bmap_1 = wx.Bitmap(im_1)</span>
+        <span class="s1">bmap_2 = wx.Bitmap(im_2)</span>
+
+        <span class="s1">image_1 = wx.StaticBitmap(self, wx.ID_ANY, bmap_1)</span>
+        <span class="s1">image_2 = wx.StaticBitmap(self, wx.ID_ANY, bmap_2)</span>
+
+        <span class="s0">#image_sizer.Add(image_1, 0)</span>
+        <span class="s0">#image_sizer.Add(image_2, 0)</span>
+
+        <span class="s0">#self.box_sizer.Add(image_sizer, 0)</span>
+        <span class="s1">self.grid_sizer.Add(image_1, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid_sizer.Add(image_2, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.gui.elements_in_sizer.extend([image_1, image_2])</span>
+
+    <span class="s2">def </span><span class="s1">add_radio_box(self):</span>
+        <span class="s0">&quot;&quot;&quot;Add two radio buttons for image selection.&quot;&quot;&quot;</span>
+        <span class="s0">#buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)</span>
+
+        <span class="s1">self.radio_a = wx.RadioButton(self, wx.ID_ANY, label=</span><span class="s3">&quot;Picture A&quot;</span><span class="s1">,</span>
+                                      <span class="s1">style=wx.RB_GROUP)</span>
+        <span class="s1">self.radio_a.SetFont(wx.Font(</span><span class="s4">10.0</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.NORMAL))</span>
+
+        <span class="s1">self.radio_b = wx.RadioButton(self, wx.ID_ANY, label=</span><span class="s3">&quot;Picture B&quot;</span><span class="s1">)</span>
+        <span class="s1">self.radio_b.SetFont(wx.Font(</span><span class="s4">10.0</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                     <span class="s1">wx.NORMAL))</span>
+
+        <span class="s0">#buttons_sizer.Add(self.radio_a, 0)</span>
+        <span class="s0">#buttons_sizer.Add(self.radio_b, 0)</span>
+
+        <span class="s0">#self.box_sizer.Add(buttons_sizer, 0)</span>
+        <span class="s1">self.grid_sizer.Add(self.radio_a, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid_sizer.Add(self.radio_b, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.gui.elements_in_sizer.extend([self.radio_a, self.radio_b])</span>
+
+    <span class="s2">def </span><span class="s1">add_submit_button(self, label):</span>
+        <span class="s0">&quot;&quot;&quot;Add a submit button. Its position is set. 
+ 
+        :param label: the text written on the button. 
+        :type label: str. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+        <span class="s1">self.box_sizer.Add(submit_button, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s0"># when the participant clicks on the button, the on_submit()</span>
+        <span class="s0"># method is called</span>
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.on_picture_choice)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">on_picture_choice(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Get the values of the radio boxes.&quot;&quot;&quot;</span>
+        <span class="s1">self.gui.submitted_message = </span><span class="s3">&quot;pic chosen&quot;</span>
+        <span class="s2">if </span><span class="s1">self.radio_a.GetValue():</span>
+            <span class="s1">self.gui.chosen_pic = self.gui.image_buttons_1</span>
+            <span class="s1">self.gui.alt_pic = self.gui.image_buttons_2</span>
+            <span class="s1">self.gui.submit_message()</span>
+        <span class="s2">elif </span><span class="s1">self.radio_b.GetValue():</span>
+            <span class="s1">self.gui.chosen_pic = self.gui.image_buttons_2</span>
+            <span class="s1">self.gui.alt_pic = self.gui.image_buttons_1</span>
+            <span class="s1">self.gui.submit_message()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.gui.submitted_message = </span><span class="s3">&quot;still choosing&quot; </span><span class="s0">#now redundant</span>
+        <span class="s1">self.Hide()</span>
+
+
+
+<span class="s2">class </span><span class="s1">DrawingPage(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for grid drawing.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise the grid.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.gui = parent</span>
+
+        <span class="s1">self.clicked = </span><span class="s2">False</span>
+
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s1">self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+        <span class="s1">self.image_sizer = wx.BoxSizer(wx.HORIZONTAL)</span>
+
+        <span class="s0"># Initialize vector of filled values to transmit</span>
+        <span class="s1">self.fill_vector = [</span><span class="s4">0</span><span class="s1">]*</span><span class="s4">49</span>
+
+        <span class="s0"># Pics to display</span>
+
+        <span class="s1">self.image_1 = os.path.join(self.gui.image_path,self.gui.chosen_pic)</span>
+        <span class="s1">self.image_2 = os.path.join(self.gui.image_path,self.gui.alt_pic)</span>
+        <span class="s1">self.pic_1 = wx.Image(self.image_1)</span>
+        <span class="s1">self.pic_2 = wx.Image(self.image_2)</span>
+        <span class="s1">self.dimensions_1 = self.gui.adjust_dimensions(self.pic_1)</span>
+        <span class="s1">self.pic_1.Rescale(self.dimensions_1[</span><span class="s4">0</span><span class="s1">], self.dimensions_1[</span><span class="s4">1</span><span class="s1">])</span>
+        <span class="s1">self.bmap_1 = wx.Bitmap(self.pic_1)</span>
+        <span class="s1">self.image_1 = wx.StaticBitmap(self, wx.ID_ANY, self.bmap_1, style=wx.BORDER_SIMPLE)</span>
+        <span class="s1">wx.lib.colourdb.updateColourDB() </span><span class="s0"># adds more colors; we want to highlight the chosen pic</span>
+        <span class="s1">self.image_1.SetBackgroundColour(wx.NamedColour(</span><span class="s3">'PALE GREEN'</span><span class="s1">))</span>
+        <span class="s1">self.dimensions_2 = self.gui.adjust_dimensions(self.pic_2)</span>
+        <span class="s1">self.pic_2.Rescale(self.dimensions_2[</span><span class="s4">0</span><span class="s1">], self.dimensions_2[</span><span class="s4">1</span><span class="s1">])</span>
+        <span class="s1">self.bmap_2 = wx.Bitmap(self.pic_2)</span>
+        <span class="s1">self.image_2 = wx.StaticBitmap(self, wx.ID_ANY, self.bmap_2)</span>
+
+        <span class="s0"># Create a wxGrid object and a timer display, add them to sizer</span>
+        <span class="s1">self.remaining = int(self.gui.SecondsGiven)</span>
+        <span class="s1">self.timer_display = wx.StaticText(self, label=</span><span class="s3">&quot;You have %s seconds from your first click!&quot; </span><span class="s1">% str(self.remaining))</span>
+        <span class="s1">self.grid = wx.grid.Grid(self, -</span><span class="s4">1</span><span class="s1">, style=wx.BORDER_SIMPLE)</span>
+        <span class="s1">self.box_sizer.Add(self.timer_display,</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.image_sizer.Add(self.image_1,</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.image_sizer.Add(self.image_2,</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.image_sizer.Add(self.grid,</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(self.image_sizer,</span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s0"># Create the timer</span>
+        <span class="s1">self.timer = wx.Timer(self)</span>
+        <span class="s1">self.Bind(wx.EVT_TIMER, self.update, self.timer)</span>
+
+        <span class="s0"># Add submit button</span>
+        <span class="s1">self.add_submit_button(</span><span class="s3">&quot;Send&quot;</span><span class="s1">)</span>
+
+        <span class="s0"># Then we call CreateGrid to set the dimensions of the grid</span>
+        <span class="s1">self.grid.CreateGrid(</span><span class="s4">7</span><span class="s1">,</span><span class="s4">7</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetDefaultColSize(</span><span class="s4">40</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetDefaultRowSize(</span><span class="s4">40</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetRowLabelSize(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetColLabelSize(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid.SetCellHighlightROPenWidth(</span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.grid.ShowScrollbars(wx.SHOW_SB_NEVER,wx.SHOW_SB_NEVER)</span>
+        <span class="s0">#self.grid.AutoSize() # &lt;--This may have to change</span>
+        
+        <span class="s1">self.grid_list = []</span>
+        
+
+
+        <span class="s0"># Make all cells read-only</span>
+        <span class="s2">for </span><span class="s1">m </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">0</span><span class="s1">,</span><span class="s4">7</span><span class="s1">):</span>
+            <span class="s1">self.grid_list.append([])</span>
+            <span class="s2">for </span><span class="s1">n </span><span class="s2">in </span><span class="s1">range(</span><span class="s4">0</span><span class="s1">,</span><span class="s4">7</span><span class="s1">):</span>
+                <span class="s1">self.grid_list[m].append(</span><span class="s4">0</span><span class="s1">)</span>
+                <span class="s1">self.grid.SetReadOnly(m,n)</span>
+                <span class="s0">#self.grid.SetCellTextColour(m, n, &quot;white&quot;)</span>
+                <span class="s0">#self.grid.SetCellValue(m,n,str(0))</span>
+
+        <span class="s0"># Bind clicking events</span>
+        <span class="s1">self.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnClick)</span>
+        <span class="s1">self.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnDClick)</span>
+        <span class="s1">self.Bind(wx.grid.EVT_GRID_RANGE_SELECT, self.OnDragSelect)</span>
+
+        <span class="s0"># Clicks parameter</span>
+        <span class="s1">self.ClickThreshold = int(self.gui.ClickThreshold)</span>
+
+        <span class="s0"># self.Show()</span>
+        
+    <span class="s2">def </span><span class="s1">OnDragSelect(self,event):</span>
+        <span class="s1">self.grid.ClearSelection()</span>
+
+    <span class="s2">def </span><span class="s1">OnClick(self, event):</span>
+        <span class="s2">if </span><span class="s1">self.clicked == </span><span class="s2">False</span><span class="s1">:</span>
+            <span class="s1">self.clicked = </span><span class="s2">True</span>
+            <span class="s1">self.gui.srvsock.send(self.gui.encode_msg(</span><span class="s3">&quot;6666FIRSTCLICK6666&quot;</span><span class="s1">))</span>
+            <span class="s1">self.StartTimer()</span>
+            <span class="s1">self.timer_display.SetLabel(</span><span class="s3">&quot;%s seconds left!&quot; </span><span class="s1">% str(self.remaining))</span>
+        <span class="s1">CellCoords = [event.GetRow(),event.GetCol()]</span>
+        <span class="s1">CellValue = self.grid_list[CellCoords[</span><span class="s4">0</span><span class="s1">]][CellCoords[</span><span class="s4">1</span><span class="s1">]]</span>
+        <span class="s0">#CellValue = self.grid.GetCellValue(*CellCoords)</span>
+        <span class="s0">#self.grid.SetCellTextColour(CellCoords[0],CellCoords[1], &quot;white&quot;) #Quick hack to stop bug where numbers sometimes visible</span>
+        <span class="s0">#self.grid.SetCellValue(CellCoords[0],CellCoords[1],str(int(CellValue)+1))</span>
+        <span class="s1">self.grid_list[CellCoords[</span><span class="s4">0</span><span class="s1">]][CellCoords[</span><span class="s4">1</span><span class="s1">]] += </span><span class="s4">1</span>
+        <span class="s1">self.CheckValue(CellCoords)</span>
+    
+    <span class="s2">def </span><span class="s1">OnDClick(self, event):</span>
+        <span class="s0">#print &quot;OnDClick: &quot;, self.grid_list</span>
+        <span class="s1">CellCoords = [event.GetRow(),event.GetCol()]</span>
+        <span class="s1">CellValue = self.grid_list[CellCoords[</span><span class="s4">0</span><span class="s1">]][CellCoords[</span><span class="s4">1</span><span class="s1">]]</span>
+        <span class="s1">self.grid.SetCellTextColour(CellCoords[</span><span class="s4">0</span><span class="s1">],CellCoords[</span><span class="s4">1</span><span class="s1">], </span><span class="s3">&quot;white&quot;</span><span class="s1">) </span><span class="s0">#Quick hack to stop bug where numbers sometimes visible</span>
+        <span class="s0">#self.grid.SetCellValue(CellCoords[0],CellCoords[1],str(int(CellValue)+1))</span>
+        <span class="s1">self.grid_list[CellCoords[</span><span class="s4">0</span><span class="s1">]][CellCoords[</span><span class="s4">1</span><span class="s1">]] += </span><span class="s4">1</span>
+        <span class="s1">self.CheckValue(CellCoords)</span>
+
+    <span class="s2">def </span><span class="s1">CheckValue(self, coords):</span>
+        <span class="s0"># tell the server there's been a click</span>
+        <span class="s1">self.gui.srvsock.send(self.gui.encode_msg(</span><span class="s3">&quot;6666&quot;</span><span class="s1">+ str(tuple(coords)) +</span><span class="s3">&quot;6666&quot;</span><span class="s1">))</span>
+        <span class="s0"># set the cell color to black if there's been enough clicks</span>
+        <span class="s0">#CellValue = self.grid.GetCellValue(*coords)</span>
+
+        <span class="s1">CellValue = self.grid_list[coords[</span><span class="s4">0</span><span class="s1">]][coords[</span><span class="s4">1</span><span class="s1">]]</span>
+
+        <span class="s2">if </span><span class="s1">int(CellValue) &gt;= self.ClickThreshold:</span>
+            <span class="s0"># print(&quot;past the threshold&quot;)</span>
+            <span class="s1">self.grid.SetCellValue(coords[</span><span class="s4">0</span><span class="s1">],coords[</span><span class="s4">1</span><span class="s1">],</span><span class="s3">&quot;&quot;</span><span class="s1">)</span>
+            <span class="s0"># print(&quot;value set&quot;)</span>
+            <span class="s1">self.grid.SetCellTextColour(coords[</span><span class="s4">0</span><span class="s1">], coords[</span><span class="s4">1</span><span class="s1">], wx.BLACK)</span>
+            <span class="s0"># print(&quot;text color sent&quot;)</span>
+            <span class="s1">self.grid.SetCellBackgroundColour(coords[</span><span class="s4">0</span><span class="s1">], coords[</span><span class="s4">1</span><span class="s1">], wx.BLACK)</span>
+            <span class="s0"># print(&quot;bg color set&quot;)</span>
+            <span class="s1">self.fill_vector[(coords[</span><span class="s4">0</span><span class="s1">]*</span><span class="s4">7</span><span class="s1">)+coords[</span><span class="s4">1</span><span class="s1">]] = </span><span class="s4">1</span>
+            
+
+    <span class="s2">def </span><span class="s1">StartTimer(self):</span>
+        <span class="s1">self.timer.Start(</span><span class="s4">1000</span><span class="s1">)</span>
+
+    <span class="s2">def </span><span class="s1">update(self, event):</span>
+        <span class="s1">self.remaining -= </span><span class="s4">1</span>
+        <span class="s2">if </span><span class="s1">self.remaining &lt; </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s2">if </span><span class="s1">self.gui.hard_mode:</span>
+                <span class="s1">print(</span><span class="s3">&quot;clearing out grid&quot;</span><span class="s1">)</span>
+                <span class="s1">self.fill_vector = [</span><span class="s4">0</span><span class="s1">]*</span><span class="s4">49 </span><span class="s0"># clear out the grid in hard mode</span>
+            <span class="s1">self.gui.submitted_message = self.fill_vector</span>
+            <span class="s1">self.gui.submit_message()</span>
+            <span class="s0"># self.timer.Stop()</span>
+        <span class="s2">else</span><span class="s1">:</span>
+            <span class="s1">self.timer_display.SetLabel(</span><span class="s3">&quot;%s seconds left!&quot; </span><span class="s1">% str(self.remaining))</span>
+
+    <span class="s2">def </span><span class="s1">add_submit_button(self, label):</span>
+        <span class="s0">&quot;&quot;&quot;Add a submit button. Its position is set. 
+ 
+        :param label: the text written on the button. 
+        :type label: str. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+        <span class="s1">self.box_sizer.Add(submit_button, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s0"># when the participant clicks on the button, the on_submit()</span>
+        <span class="s0"># method is called</span>
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.OnSubmit)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">OnSubmit(self, event):</span>
+        <span class="s1">self.gui.submitted_message = self.fill_vector</span>
+        <span class="s1">self.gui.submit_message()</span>
+
+
+<span class="s3">&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot; 
+MESSAGES PAGE 
+&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+
+<span class="s2">class </span><span class="s1">MessagePanel(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for messages to the participant.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent, msg, label=</span><span class="s2">None</span><span class="s1">):</span>
+        <span class="s0">&quot;&quot;&quot;Display a message to the participant.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+        <span class="s1">self.gui = parent</span>
+
+        <span class="s1">message = wx.StaticText(self, label=msg)</span>
+        <span class="s1">message.SetFont(wx.Font(</span><span class="s4">14</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                <span class="s1">wx.BOLD))</span>
+        <span class="s1">message.Show()</span>
+        <span class="s1">self.box_sizer.Add(message, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.gui.elements_in_sizer.append(message)</span>
+
+        <span class="s2">if </span><span class="s1">label == </span><span class="s3">&quot;OK&quot;</span><span class="s1">:</span>
+            <span class="s1">self.add_submit_button(label)</span>
+        <span class="s2">if </span><span class="s1">label == </span><span class="s3">&quot;close&quot;</span><span class="s1">:</span>
+            <span class="s1">self.add_close_button(</span><span class="s3">&quot;Close&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s1">self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+    <span class="s2">def </span><span class="s1">add_submit_button(self, label):</span>
+        <span class="s0">&quot;&quot;&quot;Add a submit button. Its position is set. 
+ 
+        :param label: the text written on the button. 
+        :type label: str. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+        <span class="s1">self.box_sizer.Add(submit_button)</span>
+        <span class="s0"># when the participant clicks on the button, the on_submit()</span>
+        <span class="s0"># method is called</span>
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.gui.on_submit)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">add_close_button(self, label):</span>
+        <span class="s0">&quot;&quot;&quot;Add the button for closing everything.&quot;&quot;&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY,</span>
+                                  <span class="s1">label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+        <span class="s1">self.box_sizer.Add(submit_button)</span>
+        <span class="s0"># when the participant clicks on the button, the on_submit()</span>
+        <span class="s0"># method is called</span>
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.gui.on_submit)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+
+<span class="s3">&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot; 
+INSTRUCTIONS PAGE 
+&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;&quot;</span>
+
+
+<span class="s2">class </span><span class="s1">InstructionsPage(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Panel for the instructions page.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Display instructions.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+
+        <span class="s1">self.gui = parent</span>
+
+        <span class="s1">message = </span><span class="s3">&quot;&quot;&quot;</span><span class="s5">\n</span><span class="s3">Please read the instructions carefully.</span><span class="s5">\n</span>
+<span class="s3">Do not hesitate to ask the researcher any questions you have.</span><span class="s5">\n</span><span class="s3">&quot;&quot;&quot;</span>
+        <span class="s1">instruct = wx.StaticText(self, label=message)</span>
+
+        <span class="s1">instruct.SetFont(wx.Font(</span><span class="s4">14</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                 <span class="s1">wx.BOLD))</span>
+        <span class="s1">instruct.Show()</span>
+
+        <span class="s2">with </span><span class="s1">codecs.open(self.gui.instructions_file, </span><span class="s3">&quot;r&quot;</span><span class="s1">, </span><span class="s3">&quot;utf-8&quot;</span><span class="s1">) </span><span class="s2">as </span><span class="s1">read_handle:</span>
+            <span class="s1">instructions = read_handle.read()</span>
+
+        <span class="s0"># Insert parameters into speaker instructions</span>
+        <span class="s1">print(</span><span class="s3">&quot;click threshold&quot;</span><span class="s1">, self.gui.ClickThreshold)</span>
+        <span class="s2">if </span><span class="s3">&quot;%s&quot; </span><span class="s2">in </span><span class="s1">instructions:</span>
+            <span class="s1">instructions = instructions % (self.gui.ClickThreshold,self.gui.SecondsGiven)</span>
+
+        <span class="s1">instruction_display = rt.RichTextCtrl(self, id=wx.ID_ANY,</span>
+                                              <span class="s1">style=wx.TE_READONLY,</span>
+                                              <span class="s1">size=(</span><span class="s4">400</span><span class="s1">, </span><span class="s4">350</span><span class="s1">))</span>
+        <span class="s1">instruction_display.BeginBold()</span>
+        <span class="s1">instruction_display.WriteText(</span><span class="s3">&quot;Instructions&quot;</span><span class="s1">)</span>
+        <span class="s1">instruction_display.WriteText(</span><span class="s3">&quot;</span><span class="s5">\n\n\n</span><span class="s3">&quot;</span><span class="s1">)</span>
+        <span class="s1">instruction_display.EndBold()</span>
+        <span class="s1">instruction_display.WriteText(instructions)</span>
+        <span class="s1">instruction_display.SetFont(wx.Font(</span><span class="s4">14</span><span class="s1">, wx.DEFAULT, wx.NORMAL,</span>
+                                    <span class="s1">wx.NORMAL))</span>
+        <span class="s1">instruction_display.Show()</span>
+
+        <span class="s1">dummy_1 = wx.StaticText(self, label=</span><span class="s3">&quot;&quot;</span><span class="s1">)</span>
+        <span class="s1">dummy_1.Show()</span>
+
+        <span class="s1">self.box_sizer.Add(instruct, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(instruction_display, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s1">self.box_sizer.Add(dummy_1, </span><span class="s4">0</span><span class="s1">)</span>
+
+        <span class="s1">self.gui.elements_in_sizer.append(instruct)</span>
+        <span class="s1">self.gui.elements_in_sizer.append(instruction_display)</span>
+        <span class="s1">self.gui.elements_in_sizer.append(dummy_1)</span>
+
+        <span class="s1">self.add_submit_button(</span><span class="s3">&quot;OK&quot;</span><span class="s1">)</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s1">self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+    <span class="s2">def </span><span class="s1">add_submit_button(self, label):</span>
+        <span class="s0">&quot;&quot;&quot;Add a submit button. Its position is set. 
+ 
+        :param label: the text written on the button. 
+        :type label: str. 
+        &quot;&quot;&quot;</span>
+        <span class="s1">submit_button = wx.Button(self, id=wx.ID_ANY, label=label,</span>
+                                  <span class="s1">size=self.gui.submit_button_size)</span>
+        <span class="s1">self.box_sizer.Add(submit_button, </span><span class="s4">0</span><span class="s1">)</span>
+        <span class="s0"># when the participant clicks on the button, the on_submit()</span>
+        <span class="s0"># method is called</span>
+        <span class="s1">submit_button.Bind(wx.EVT_BUTTON, self.on_instructions_submit)</span>
+        <span class="s1">submit_button.Show()</span>
+        <span class="s1">self.gui.elements_in_sizer.append(submit_button)</span>
+
+    <span class="s2">def </span><span class="s1">on_instructions_submit(self, event):</span>
+        <span class="s0">&quot;&quot;&quot;Submit message that the instructions were read.&quot;&quot;&quot;</span>
+        <span class="s1">self.Hide()</span>
+        <span class="s1">self.gui.submit_message()</span>
+
+
+<span class="s0"># Listens for incoming data</span>
+<span class="s2">class </span><span class="s1">Reader(threading.Thread):</span>
+    <span class="s0">&quot;&quot;&quot;Class for reading messages from the server.&quot;&quot;&quot;</span>
+
+    <span class="s1">indata = </span><span class="s3">''</span>
+    <span class="s1">ilock = threading.Lock()</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, srvsock, gui):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise the messages reader.&quot;&quot;&quot;</span>
+        <span class="s1">self.gui = gui</span>
+        <span class="s1">self.srvsock = srvsock</span>
+        <span class="s1">threading.Thread.__init__(self)</span>
+        <span class="s1">self.buffer = []</span>
+
+    <span class="s2">def </span><span class="s1">decode_strings(self, string):</span>
+        <span class="s0">&quot;&quot;&quot;Decode a string to utf-8.&quot;&quot;&quot;</span>
+        <span class="s2">return</span><span class="s1">(string.decode(</span><span class="s3">&quot;utf-8&quot;</span><span class="s1">))</span>
+
+    <span class="s2">def </span><span class="s1">recv_end(self, the_socket):</span>
+        <span class="s0">&quot;&quot;&quot;Get messages from the server.&quot;&quot;&quot;</span>
+        <span class="s1">end = self.gui.server_end_marker</span>
+        <span class="s1">total_data = self.buffer</span>
+        <span class="s1">messages = []</span>
+        <span class="s1">data = </span><span class="s3">''</span>
+        <span class="s1">raw_data = </span><span class="s3">&quot;&quot;</span>
+        <span class="s2">while True</span><span class="s1">:</span>
+            <span class="s1">raw_data = the_socket.recv(self.gui.bufsize)</span>
+            <span class="s0"># print &quot;rawdata = &quot;, raw_data</span>
+            <span class="s1">data = self.decode_strings(raw_data)</span>
+            <span class="s0"># print &quot;data = &quot;, data</span>
+            <span class="s2">if </span><span class="s1">end </span><span class="s2">in </span><span class="s1">data:</span>
+                <span class="s1">total_data.append(data[:data.find(end)])</span>
+                <span class="s1">messages.append(total_data)</span>
+                <span class="s1">total_data = []</span>
+                <span class="s1">self.buffer = []</span>
+                <span class="s1">mesg_len = len(end) + len(data[:data.find(end)])</span>
+                <span class="s2">if </span><span class="s1">mesg_len &lt; len(data):</span>
+                    <span class="s1">leftover = data[mesg_len:]</span>
+                    <span class="s2">while True</span><span class="s1">:</span>
+                        <span class="s2">if </span><span class="s1">end </span><span class="s2">in </span><span class="s1">leftover:</span>
+                            <span class="s1">total_data.append(leftover[:leftover.find(end)])</span>
+                            <span class="s1">messages.append(total_data)</span>
+                            <span class="s1">total_data = []</span>
+                            <span class="s1">msg_len = (len(end) +</span>
+                                       <span class="s1">len(leftover[:leftover.find(end)]))</span>
+                            <span class="s2">if </span><span class="s1">len(leftover) == msg_len:</span>
+                                <span class="s2">break</span>
+                            <span class="s2">else</span><span class="s1">:</span>
+                                <span class="s1">leftover = leftover[msg_len:]</span>
+                        <span class="s2">else</span><span class="s1">:</span>
+                            <span class="s1">self.buffer.append(leftover)</span>
+                            <span class="s2">break</span>
+
+                <span class="s2">break</span>
+            <span class="s1">total_data.append(data)</span>
+            <span class="s2">if </span><span class="s1">len(total_data) &gt; </span><span class="s4">1</span><span class="s1">:</span>
+                <span class="s0"># check if end_of_data was split</span>
+                <span class="s1">last_pair = total_data[-</span><span class="s4">2</span><span class="s1">] + total_data[-</span><span class="s4">1</span><span class="s1">]</span>
+                <span class="s2">if </span><span class="s1">end </span><span class="s2">in </span><span class="s1">last_pair:</span>
+                    <span class="s1">total_data[-</span><span class="s4">2</span><span class="s1">] = last_pair[:last_pair.find(end)]</span>
+                    <span class="s1">total_data.pop()</span>
+                    <span class="s2">break</span>
+        <span class="s1">messages2return = []</span>
+        <span class="s2">for </span><span class="s1">msg </span><span class="s2">in </span><span class="s1">messages:</span>
+            <span class="s1">messages2return.append(</span><span class="s3">''</span><span class="s1">.join(msg))</span>
+
+        <span class="s2">return</span><span class="s1">(messages2return)</span>
+
+    <span class="s2">def </span><span class="s1">run(self):</span>
+        <span class="s0">&quot;&quot;&quot;Read incoming data and check if it is from the server.&quot;&quot;&quot;</span>
+        <span class="s2">while </span><span class="s4">1</span><span class="s1">:</span>
+            <span class="s2">try</span><span class="s1">:</span>
+                <span class="s1">ind = self.recv_end(self.srvsock)</span>
+            <span class="s2">except</span><span class="s1">:</span>
+                <span class="s1">print(</span><span class="s3">'Connection closed. No longer receiving data.'</span><span class="s1">)</span>
+                <span class="s2">break</span>
+            <span class="s1">Reader.ilock.acquire()</span>
+            <span class="s2">for </span><span class="s1">Reader.indata </span><span class="s2">in </span><span class="s1">ind:</span>
+                <span class="s2">if </span><span class="s1">Reader.indata != </span><span class="s3">&quot;&quot;</span><span class="s1">:</span>
+                    <span class="s2">try</span><span class="s1">:</span>
+                        <span class="s1">Reader.ilock.release()</span>
+                    <span class="s2">except</span><span class="s1">:</span>
+                        <span class="s2">pass</span>
+                    <span class="s0"># go to incoming_message() for deciding which stage is</span>
+                    <span class="s0"># the next</span>
+                    <span class="s1">wx.CallAfter(self.gui.incoming_message, Reader.indata)</span>
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">Reader.ilock.release()</span>
+
+
+<span class="s2">class </span><span class="s1">DummyPanel(wx.Panel):</span>
+    <span class="s0">&quot;&quot;&quot;Dummy panel for getting elements in the middle of the page.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise panel with welcome message.&quot;&quot;&quot;</span>
+        <span class="s1">wx.Panel.__init__(self, parent)</span>
+        <span class="s1">self.gui = parent</span>
+        <span class="s1">self.box_sizer = wx.BoxSizer(wx.VERTICAL)</span>
+
+        <span class="s0"># text = wx.StaticText(self, wx.ID_ANY, label=&quot;TEST&quot;)</span>
+        <span class="s0"># self.box_sizer.Add(text, 0)</span>
+
+        <span class="s1">self.SetSizer(self.box_sizer)</span>
+        <span class="s0"># self.box_sizer.Fit(self)</span>
+        <span class="s1">self.box_sizer.Layout()</span>
+        <span class="s1">self.Center()</span>
+
+
+<span class="s2">class </span><span class="s1">Client:</span>
+    <span class="s0">&quot;&quot;&quot;The client framework.&quot;&quot;&quot;</span>
+
+    <span class="s2">def </span><span class="s1">__init__(self, parent, host, name):</span>
+        <span class="s0">&quot;&quot;&quot;Initialise the GUI for each client.&quot;&quot;&quot;</span>
+        <span class="s0"># The &quot;False&quot; parameter means &quot;don't redirect stdout and stderr</span>
+        <span class="s0"># to a gui&quot; (direct it to the terminal instead)</span>
+        <span class="s1">app = wx.App(</span><span class="s2">False</span><span class="s1">)</span>
+        <span class="s0"># initialize GuiWindow class</span>
+        <span class="s1">frame = GuiWindow(parent, wx.ID_ANY, </span><span class="s3">''</span><span class="s1">, host, name)</span>
+
+        <span class="s0"># move the Gui window to the specified position</span>
+        <span class="s0"># frame.SetPosition((500, 100))</span>
+        <span class="s1">app.MainLoop()</span>
+
+
+<span class="s0"># Client(None,&quot;localhost&quot;,&quot;yourname&quot;)</span>
+<span class="s0"># This can be used to bootstrap the Client without using run_client.py</span>
+</pre>
+</body>
+</html>

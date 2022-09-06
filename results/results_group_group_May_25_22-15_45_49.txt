@@ -1,0 +1,16 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+May_25_22-15_45_54 | 6666INFOp16666
+May_25_22-15_45_58 | 6666INFOp26666
+May_25_22-15_46_03 | 6666SURVEYCOMPLETED@p1@Native language: none given, Main area of study: none given@6666
+May_25_22-15_46_05 | 6666SURVEYCOMPLETED@p2@Native language: none given, Main area of study: none given@6666
+May_25_22-15_46_06 | 6666INSTRUCTIONSREAD@p2@6666
+May_25_22-15_46_06 | 6666INSTRUCTIONSREAD@p1@6666
+May_25_22-15_46_06 | 6666image-1b.png|||image-1a.png6666
+May_25_22-15_46_06 | 6666PICimage-1b.png@p1@6666
+May_25_22-15_46_08 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@p1@Dog@6666

@@ -1,0 +1,16 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_27_22-14_32_46 | 6666INFOfsd6666
+Jun_27_22-14_32_49 | 6666INFOgf6666
+Jun_27_22-14_32_51 | 6666SURVEYCOMPLETED@gf@Native language: none given, Main area of study: none given@6666
+Jun_27_22-14_32_53 | 6666SURVEYCOMPLETED@fsd@Native language: none given, Main area of study: none given@6666
+Jun_27_22-14_32_54 | 6666INSTRUCTIONSREAD@fsd@6666
+Jun_27_22-14_32_56 | 6666INSTRUCTIONSREAD@gf@6666
+Jun_27_22-14_33_02 | 6666COORD[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]@fsd@Daisy@6666
+Jun_27_22-14_33_08 | 6666GUESSDaisy@gf@Daisy@6666
+Jun_27_22-14_33_09 | 6666NEXTROUND6666

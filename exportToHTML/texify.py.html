@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>texify.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #8c8c8c; font-style: italic;}
+.s1 { color: #080808;}
+.s2 { color: #0033b3;}
+.s3 { color: #067d17;}
+.s4 { color: #0037a6;}
+.s5 { color: #1750eb;}
+</style>
+</head>
+<body bgcolor="#ffffff">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#c0c0c0" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+texify.py</font>
+</center></td></tr></table>
+<pre><span class="s0">&quot;&quot;&quot; 
+From bash command line, python texify.py &lt;name of results file&gt; 
+If the results file is in a subdirectory of the working directory called 'results', 
+ then you do not need to specify the path of the results file 
+&quot;&quot;&quot;</span>
+
+<span class="s2">import </span><span class="s1">json</span>
+<span class="s2">import </span><span class="s1">sys</span>
+<span class="s2">import </span><span class="s1">os</span>
+
+<span class="s2">def </span><span class="s1">writeline(f,s):</span>
+    <span class="s1">string_ = s + </span><span class="s3">&quot;</span><span class="s4">\n</span><span class="s3">&quot;</span>
+    <span class="s1">f.write(string_)</span>
+
+<span class="s2">def </span><span class="s1">newpage(f):</span>
+    <span class="s1">writeline(f,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">newpage</span><span class="s4">\\</span><span class="s3">noindent&quot;</span><span class="s1">)</span>
+
+<span class="s2">def </span><span class="s1">create_tex_file(i,o):</span>
+    <span class="s1">image_path = os.path.dirname(os.getcwd()) + </span><span class="s3">&quot;/images/&quot;</span>
+    <span class="s1">image_files = []</span>
+    <span class="s1">score = </span><span class="s3">&quot;&quot;</span>
+    <span class="s1">line = </span><span class="s3">&quot;initialized&quot;</span>
+
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">documentclass{minimal}&quot;</span><span class="s1">)</span>
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">usepackage{graphicx}&quot;</span><span class="s1">)</span>
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">usepackage{color}&quot;</span><span class="s1">)</span>
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">begin{document}&quot;</span><span class="s1">)</span>
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">setlength{</span><span class="s4">\\</span><span class="s3">tabcolsep}{1.33mm}&quot;</span><span class="s1">)</span>
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">noindent&quot;</span><span class="s1">)</span>
+
+    <span class="s2">while </span><span class="s1">line:</span>
+        <span class="s1">line = i.readline()</span>
+
+        <span class="s2">if </span><span class="s3">&quot;|||&quot; </span><span class="s2">in </span><span class="s1">line:</span>
+            <span class="s1">info = line.split(</span><span class="s3">&quot;6666&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">]</span>
+            <span class="s1">image_files = info.split(</span><span class="s3">&quot;|||&quot;</span><span class="s1">)</span>
+
+        <span class="s2">if </span><span class="s3">&quot;6666PIC&quot; </span><span class="s2">in </span><span class="s1">line:</span>
+            <span class="s1">drawn = line.split(</span><span class="s3">&quot;6666&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">].split(</span><span class="s3">&quot;PIC&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">].split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s5">0</span><span class="s1">]</span>
+            <span class="s1">rejected = [image </span><span class="s2">for </span><span class="s1">image </span><span class="s2">in </span><span class="s1">image_files </span><span class="s2">if </span><span class="s1">image != drawn][</span><span class="s5">0</span><span class="s1">]</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;Chosen:</span><span class="s4">\\\\</span><span class="s3">&quot;</span><span class="s1">)</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">includegraphics[scale=0.5]{%s}</span><span class="s4">\\\\</span><span class="s3">&quot; </span><span class="s1">% (image_path + drawn))</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;Not chosen:</span><span class="s4">\\\\</span><span class="s3">&quot;</span><span class="s1">)</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">includegraphics[scale=0.5]{%s}</span><span class="s4">\\\\</span><span class="s3">&quot; </span><span class="s1">% (image_path + rejected))</span>
+
+        <span class="s2">if </span><span class="s3">&quot;6666COORD&quot; </span><span class="s2">in </span><span class="s1">line:</span>
+            <span class="s1">coordvec = json.loads(</span><span class="s3">&quot;[&quot; </span><span class="s1">+ line.split(</span><span class="s3">&quot;[&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">].split(</span><span class="s3">&quot;]&quot;</span><span class="s1">)[</span><span class="s5">0</span><span class="s1">] + </span><span class="s3">&quot;]&quot;</span><span class="s1">)</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;Drawing:</span><span class="s4">\\\\</span><span class="s3">&quot;</span><span class="s1">)</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">begin{tabular}{l l l l l l l l}&quot;</span><span class="s1">)</span>
+            <span class="s1">table_content = </span><span class="s3">&quot;&quot;</span>
+            <span class="s2">for </span><span class="s1">n </span><span class="s2">in </span><span class="s1">range(</span><span class="s5">0</span><span class="s1">,</span><span class="s5">49</span><span class="s1">):</span>
+                <span class="s2">if not </span><span class="s1">n % </span><span class="s5">7</span><span class="s1">:</span>
+                    <span class="s1">table_content = table_content + </span><span class="s3">&quot;</span><span class="s4">\\\\\n</span><span class="s3">&quot;</span>
+                <span class="s2">if </span><span class="s1">coordvec[n] == </span><span class="s5">0</span><span class="s1">:</span>
+                    <span class="s1">table_content = table_content + </span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">color{yellow}{X}&quot;</span>
+                <span class="s2">else</span><span class="s1">:</span>
+                    <span class="s1">table_content = table_content + </span><span class="s3">&quot;X&quot;</span>
+                <span class="s2">if </span><span class="s1">n != </span><span class="s5">48</span><span class="s1">:</span>
+                    <span class="s1">table_content = table_content + </span><span class="s3">&quot; &amp; &quot;</span>
+            <span class="s1">writeline(o,table_content)</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">end{tabular}</span><span class="s4">\\\\</span><span class="s3">&quot;</span><span class="s1">)</span>
+
+        <span class="s2">if </span><span class="s3">&quot;6666GUESS&quot; </span><span class="s2">in </span><span class="s1">line:</span>
+            <span class="s1">guessed = line.split(</span><span class="s3">&quot;6666&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">].split(</span><span class="s3">&quot;GUESS&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">].split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s5">0</span><span class="s1">]</span>
+            <span class="s1">status = </span><span class="s3">&quot;wrong&quot;</span>
+            <span class="s2">if </span><span class="s1">guessed == drawn:</span>
+                <span class="s1">status = </span><span class="s3">&quot;right&quot;</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;Receiver guessed %s&quot; </span><span class="s1">% status)</span>
+            <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">newpage</span><span class="s4">\\</span><span class="s3">noindent&quot;</span><span class="s1">)</span>
+
+        <span class="s2">if </span><span class="s3">&quot;6666SCORE&quot; </span><span class="s2">in </span><span class="s1">line:</span>
+            <span class="s1">score = line.split(</span><span class="s3">&quot;@&quot;</span><span class="s1">)[</span><span class="s5">1</span><span class="s1">]</span>
+
+    <span class="s1">writeline(o,</span><span class="s3">&quot;Score:  &quot; </span><span class="s1">+ score)</span>
+    <span class="s1">writeline(o,</span><span class="s3">&quot;</span><span class="s4">\\</span><span class="s3">end{document}&quot;</span><span class="s1">)</span>
+
+
+<span class="s2">def </span><span class="s1">main(argv):</span>
+    <span class="s2">try</span><span class="s1">:</span>
+        <span class="s1">os.chdir(</span><span class="s3">&quot;results&quot;</span><span class="s1">)</span>
+    <span class="s2">except</span><span class="s1">:</span>
+        <span class="s2">pass</span>
+
+    <span class="s2">if </span><span class="s1">len(argv) != </span><span class="s5">2</span><span class="s1">:</span>
+        <span class="s1">sys.exit(</span><span class="s5">2</span><span class="s1">)</span>
+
+    <span class="s1">input_file = argv[</span><span class="s5">1</span><span class="s1">]</span>
+
+    <span class="s1">output_dir = argv[</span><span class="s5">1</span><span class="s1">].split(</span><span class="s3">&quot;.&quot;</span><span class="s1">)[</span><span class="s5">0</span><span class="s1">]</span>
+
+    <span class="s2">if </span><span class="s1">os.path.exists(output_dir):</span>
+        <span class="s1">sys.exit(</span><span class="s3">&quot;No duplicates.&quot;</span><span class="s1">)</span>
+
+    <span class="s1">os.makedirs(output_dir)</span>
+
+    <span class="s1">output_file = output_dir + </span><span class="s3">&quot;/&quot; </span><span class="s1">+ output_dir + </span><span class="s3">&quot;.tex&quot;</span>
+
+    <span class="s1">i = open(input_file,</span><span class="s3">'r'</span><span class="s1">)</span>
+    <span class="s1">o = open(output_file,</span><span class="s3">'w'</span><span class="s1">)</span>
+
+    <span class="s1">create_tex_file(i,o)</span>
+
+    <span class="s1">i.close()</span>
+    <span class="s1">o.close()</span>
+
+<span class="s2">if </span><span class="s1">__name__ == </span><span class="s3">&quot;__main__&quot;</span><span class="s1">:</span>
+    <span class="s1">main(sys.argv)</span>
+</pre>
+</body>
+</html>

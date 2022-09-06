@@ -1,0 +1,15 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_30_22-14_03_56 | 6666INFOd6666
+Jun_30_22-14_04_00 | 6666INFOhfg6666
+Jun_30_22-14_04_01 | 6666SURVEYCOMPLETED@hfg@Native language: none given, Favorite Pokemon: , Main area of study: none given@6666
+Jun_30_22-14_04_05 | 6666SURVEYCOMPLETED@d@Native language: none given, Favorite Pokemon: , Main area of study: none given@6666
+Jun_30_22-14_04_07 | 6666INSTRUCTIONSREAD@d@6666
+Jun_30_22-14_04_10 | 6666INSTRUCTIONSREAD@hfg@6666
+Jun_30_22-14_04_14 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@d@Daisy@6666
+Jun_30_22-14_04_17 | 6666GUESSAnimal@hfg@Daisy@6666

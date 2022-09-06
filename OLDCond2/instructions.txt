@@ -1,0 +1,17 @@
+You live in a galaxy far far away. Along with your partner, located on a separate planet, you are responsible for coordinating traffic through your solar system. Part of this work involves making sure that the correct route-maps are provided to cargo-ships. Unfortunately, there has been a system failure! Some of your route-maps have got confused with each other, and the same has happened to your partner. Luckily, the failure has affected different sets of maps in each case. You have the information to put your partner right, and vice versa. But your communication system is also failing and you don’t have much time. You will have to communicate quickly to each other to help choose the correct route maps.
+
+This game consists of a series of rounds. In each round one of you will take the role of sender and the other will take the role of receiver. 
+
+At the start of a round the sender will see two route-maps, each of which looks like a line figure drawn over a grid of squares. One of the two (the correct map) will be highlighted in green. Next to these two maps will be an empty grid. The sender’s job is to communicate to the receiver which of the two maps is highlighted by filling in squares in the empty grid. It’s up to the sender which squares to fill and how many, but there are two important things to keep in mind:
+
+1. The system failure has left you with a very limited communication channel. To have a square of the grid count as filled you have to click on that square %s times. Then it will turn black. THE SENDER MUST CLICK ON IT ENOUGH TIMES TO FILL IT. There is no such thing as partially filling a square in the grid.
+
+2. You have limited time. From the moment the sender clicks inside a square on the grid, they will have only %s seconds before their turn is up. ONCE THE TIME IS UP NO MORE SQUARES CAN BE FILLED. The message has to be sent in time, or spacecraft will collide. 
+
+Once the sender’s turn is over, the receiver will be presented with the sender’s completed grid along with the same two maps (though not necessarily in the same order). The receiver’s task is to choose which of the two maps the sender was trying to convey. 
+
+If the receiver chooses correctly, you both score one point (representing a cargo ship that got to the right place). You will then swap roles and start a new round.
+
+At the end of the game, if you were successful on at least 80 percent of rounds, you will win a prize in recognition of your good work under trying circumstances. If you score below 80 percent, you’ll lose your prestigious jobs and have to go back to cleaning cargo-holds.
+
+Please make sure that you’ve read all instructions carefully before proceeding. Let the researcher know if you have any questions.

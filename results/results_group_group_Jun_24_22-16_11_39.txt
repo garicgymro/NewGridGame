@@ -1,0 +1,14 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_24_22-16_11_44 | 6666INFOhgf6666
+Jun_24_22-16_11_49 | 6666INFOhfgj6666
+Jun_24_22-16_11_50 | 6666SURVEYCOMPLETED@hfgj@Native language: none given, Main area of study: none given@6666
+Jun_24_22-16_11_53 | 6666SURVEYCOMPLETED@hgf@Native language: none given, Main area of study: none given@6666
+Jun_24_22-16_11_55 | 6666INSTRUCTIONSREAD@hgf@6666
+Jun_24_22-16_11_57 | 6666INSTRUCTIONSREAD@hfgj@6666
+Jun_24_22-16_12_16 | 6666COORD[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1]@hgf@Ice cream@6666

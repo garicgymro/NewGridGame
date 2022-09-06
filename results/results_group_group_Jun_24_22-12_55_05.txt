@@ -1,0 +1,14 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jun_24_22-12_55_09 | 6666INFOhfg6666
+Jun_24_22-12_55_14 | 6666INFOghj6666
+Jun_24_22-12_55_15 | 6666SURVEYCOMPLETED@ghj@Native language: none given, Main area of study: none given@6666
+Jun_24_22-12_55_19 | 6666SURVEYCOMPLETED@hfg@Native language: none given, Main area of study: none given@6666
+Jun_24_22-12_55_20 | 6666INSTRUCTIONSREAD@hfg@6666
+Jun_24_22-12_55_23 | 6666INSTRUCTIONSREAD@ghj@6666
+Jun_24_22-12_55_28 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@hfg@Flower@6666

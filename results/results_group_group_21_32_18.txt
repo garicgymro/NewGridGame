@@ -1,0 +1,48 @@
+Parameters:
+Swapping: True
+Randomization: True
+Time per round: 30
+Hard mode: False
+Number of clicks: 15
+Gradual cell filling: False
+Jan_14_22-21_32_44 | 6666INFOplayer16666
+Jan_14_22-21_32_51 | 6666INFOplayer26666
+Jan_14_22-21_32_56 | 6666SURVEYCOMPLETED@player1@Native language: none given, Main area of study: none given@6666
+Jan_14_22-21_32_57 | 6666SURVEYCOMPLETED@player2@Native language: none given, Main area of study: none given@6666
+Jan_14_22-21_32_58 | 6666INSTRUCTIONSREAD@player2@6666
+Jan_14_22-21_32_58 | 6666INSTRUCTIONSREAD@player1@6666
+Jan_14_22-21_32_58 | 6666image-7a.png|||image-8a.png6666
+Jan_14_22-21_32_58 | 6666PICimage-7a.png@player1@6666
+Jan_14_22-21_32_59 | 6666FIRSTCLICK6666
+Jan_14_22-21_32_59 | 6666(5, 2)6666
+Jan_14_22-21_32_59 | 6666(4, 2)6666
+Jan_14_22-21_33_01 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@6666
+Jan_14_22-21_33_03 | 6666GUESSimage-8a.png@player2@6666
+Jan_14_22-21_33_04 | 6666NEXTROUND6666
+Jan_14_22-21_33_04 | 6666image-1a.png|||image-1b.png6666
+Jan_14_22-21_33_04 | 6666PICimage-1a.png@player2@6666
+Jan_14_22-21_33_05 | 6666FIRSTCLICK6666
+Jan_14_22-21_33_05 | 6666(5, 0)6666
+Jan_14_22-21_33_06 | 6666(4, 1)6666
+Jan_14_22-21_33_08 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player2@6666
+Jan_14_22-21_33_11 | 6666GUESSimage-1a.png@player1@6666
+Jan_14_22-21_33_13 | 6666NEXTROUND6666
+Jan_14_22-21_33_14 | 6666READYTOSTARTPROPERROUNDS@player2@6666
+Jan_14_22-21_33_14 | 6666READYTOSTARTPROPERROUNDS@player1@6666
+Jan_14_22-21_33_14 | 6666image-5a.png|||image-5b.png6666
+Jan_14_22-21_33_14 | 6666PICimage-5a.png@player1@6666
+Jan_14_22-21_33_15 | 6666FIRSTCLICK6666
+Jan_14_22-21_33_15 | 6666(3, 2)6666
+Jan_14_22-21_33_16 | 6666(4, 4)6666
+Jan_14_22-21_33_17 | 6666(2, 2)6666
+Jan_14_22-21_33_18 | 6666(3, 2)6666
+Jan_14_22-21_33_18 | 6666(2, 3)6666
+Jan_14_22-21_33_20 | 6666COORD[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]@player1@6666
+Jan_14_22-21_33_22 | 6666GUESSimage-5a.png@player2@6666
+Jan_14_22-21_33_24 | 6666NEXTROUND6666
+Jan_14_22-21_33_24 | 6666image-1a.png|||image-1c.png6666
+Jan_14_22-21_33_24 | 6666PICimage-1a.png@player2@6666
+Jan_14_22-21_33_24 | 6666FIRSTCLICK6666
+Jan_14_22-21_33_24 | 6666(2, 1)6666
+Jan_14_22-21_33_26 | 6666(3, 2)6666
+Jan_14_22-21_33_27 | 6666(2, 0)6666

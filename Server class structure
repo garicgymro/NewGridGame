@@ -1,0 +1,9 @@
+Why isn't parameter_reader written in Server?
+
+**Server**
+Player
+Gui(wx.Frame)
+Srvr(threading.Thread)
+ListenForClients(threading.Thread)
+
+run_server

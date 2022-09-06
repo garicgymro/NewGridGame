@@ -1,0 +1,24 @@
+Changes implemented, 4/14:
+-Nixed the picture selection screen for the sender; the computer selects the picture
+-Numbers in the grid cells no longer displayed
+-Implemented role swapping
+
+Changes implemented, 4/15:
+-Implemented longer 24-item list
+-Added filler items
+-Updated readme.txt
+
+Changes implemented, 4/19:
+-Images and grid made bigger
+-Corrected problem in which, if listener clicked “OK” without selecting an image, the images sometimes swapped places
+-Corrected problem in which Quit button on Server didn’t work
+-Revamped instructions. Alien scenario yet to do.
+-Increased instruction font to 14
+-Changed “Instructions to follow” to “Please click start when you’re ready”
+
+Changed implemented, 5/5:
+Scenario added to all instructions
+
+Inthat's changes
+Changes implemented 1/10/22:
+
