@@ -32,7 +32,7 @@ import time
 import ast
 import ujson
 
-from parameter_reader import Parameters
+# from parameter_reader import Parameters
 
 try:
     import wx
@@ -146,10 +146,10 @@ class Glbls():
     noise_round = False
     substitutionCount = 0
     roundsSinceLastSubstitution = substitutionParam["min_interval"] + 1
-    time_per_round = 30 #in seconds
-    min_time_per_round = 15
+    time_per_round = 40 #in seconds
+    min_time_per_round = 20
     reduce_round_time = True
-    round_time_reduction = 1
+    round_time_reduction = 0.5
     num_clicks = None 
     images_path = None
     swapping = None
@@ -186,7 +186,6 @@ class Gui(wx.Frame):
     """..."""
 
     def __init__(self, parent, id, title, gui_show, nclnts,
-                 practice_rounds_config, proper_rounds_config, csv_header,
                  group_name, images_path, results_path,
                  randomization, hard_mode, swapping, time_per_round, no_of_clicks):
 
@@ -215,8 +214,8 @@ class Gui(wx.Frame):
 
         # self.num_practice_rounds = len(practice_rounds_config)
         self.num_practice_rounds = 4
-        self.practice_rounds_config = practice_rounds_config
-        self.current_practice_config = {}
+        # self.practice_rounds_config = practice_rounds_config
+        # self.current_practice_config = {}
         # This must be the same as in the Server script
         # self.server_end_marker = "!!!%%%&&&!!!"
         self.allconnected = 0
@@ -231,12 +230,12 @@ class Gui(wx.Frame):
         #threads allow processes to run in parallel
         self.threads = []
         self.realnames = []
-        self.header = csv_header
+        # self.header = csv_header
         self.nclnts = nclnts
         self.group_name = group_name        
         
         # get parameters from parameter file:
-        self.parameters_for_proper_rounds = proper_rounds_config
+        # self.parameters_for_proper_rounds = proper_rounds_config
         
         file_name = ("results_" + self.group_name + ".txt")
         results_file_path = os.path.join(self.results_dir,file_name)
@@ -1558,23 +1557,21 @@ class ListenForClients(threading.Thread):
 class Server:
     """..."""
 
-    def __init__(self, parent, gui_show, nclnts, group_name, practice_path,
-                 proper_path, images_path, results_path,
+    def __init__(self, parent, gui_show, nclnts, group_name,images_path, results_path,
                  randomization, hard_mode, swapping, time_per_round, no_of_clicks):
         """..."""
         # The "False" parameter means "don't redirect stdout and stderr to a gui"
         app = wx.App(False)
 
         # instantiate the parameter file reader
-        parameter_reader = Parameters(randomized=randomization)
+        # parameter_reader = Parameters(randomized=randomization)
 
-        proper_rounds_config = parameter_reader.get_parameters_for_proper_rounds(proper_path)
-        practice_rounds_config = parameter_reader.get_parameters_for_practice_rounds(practice_path)
+        # proper_rounds_config = parameter_reader.get_parameters_for_proper_rounds(proper_path)
+        # practice_rounds_config = parameter_reader.get_parameters_for_practice_rounds(practice_path)
 
-        header = parameter_reader.header
+        # header = parameter_reader.header
 
         frame = Gui(parent, wx.ID_ANY, 'Server', gui_show, nclnts,
-                    practice_rounds_config, proper_rounds_config, header,
                     group_name, images_path, results_path,
                     randomization, hard_mode, swapping, time_per_round, no_of_clicks)
         app.MainLoop()

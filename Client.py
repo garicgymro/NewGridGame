@@ -52,12 +52,17 @@ class Glbls():
     grid_size = 12
     timeRounds = True
     displayTimer = True
-    roundLength = 40 #in seconds
-    minRoundLength = 20
+    displayScore = True
+    roundLength = None
+    maxRoundLength = roundLength
+    minRoundLength = None
     reduceRoundTime = True 
-    roundTimeReduction = 0.5
+    roundTimeReduction = None
     server_end_marker = "!!!%%%&&&!!!"
     practice_over = False
+    last_feedback = ""
+    score = 0
+    round_counter = 0
 
 
 
@@ -135,8 +140,8 @@ class GuiWindow(wx.Frame):
         self.listener_chosen_pic = ""
         self.pic_for_displaying = ""
         # score
-        self.score = 0
-        self.round_counter = 0
+        # Glbls.score = 0
+        # self.round_counter = 0
         # path to the image directory
         self.image_path = ""
         # collect all sizer elements for clearing them in one
@@ -344,6 +349,9 @@ class GuiWindow(wx.Frame):
 
         msg = "You are waiting on a message from your partner."
 
+        if Glbls.last_feedback != None:
+            msg = msg + "\n" + Glbls.last_feedback
+
         dummy_panel_1 = DummyPanel(self)
         message_panel = MessagePanel(self, msg)
         dummy_panel_2 = DummyPanel(self)
@@ -395,32 +403,41 @@ class GuiWindow(wx.Frame):
                 # print("Speaker's referent label:")
                 if self.role == "speaker":
                     msg = "They correctly picked \"" + str(self.correctReferent) + "\"! Well done!\n"
+                    Glbls.last_feedback = "In the last round your partner correctly picked \"" + str(self.correctReferent) + "\"."
                 else:
                     msg = "\"" + str(self.correctReferent) + "\" was correct! Well done!\n"
-                # print("previous score", self.score)
-                self.score += 1
-                # print("practice score increased by 1!", self.score)
+                    Glbls.last_feedback = None
+                # print("previous score", Glbls.score)
+                Glbls.score += 1
+                # print("practice score increased by 1!", Glbls.score)
                 # print("**exit round_feedback_stage**")
             else:
                 if self.role == "speaker":
                     msg = "They got it wrong! They picked \"" + str(self.listener_pic_for_displaying) + "\" instead of \"" + str(self.correctReferent) + "\".\n"
+                    Glbls.last_feedback = "In the last round your partner incorrectly picked \"" + str(self.listener_pic_for_displaying) + "\" instead of \"" + str(self.correctReferent) + "\"."
+
                 else:
                     msg = "You got it wrong! The correct answer was \"" + str(self.correctReferent) + "\"." + " However, you picked \"" + str(self.listener_pic_for_displaying) + "\".\n"
+                    Glbls.last_feedback = None
         else:
-            self.round_counter += 1
+            Glbls.round_counter += 1
             if str(self.listener_pic_for_displaying) == str(self.correctReferent):
-                self.score += 1
-                # print("real score:", self.score)
+                Glbls.score += 1
+                # print("real score:", Glbls.score)
                 # print("role:", self.role)
                 if self.role == "speaker":
                     msg = "They correctly picked \"" + str(self.correctReferent) + "\"! Well done!\n"
+                    Glbls.last_feedback = "In the last round your partner correctly picked \"" + str(self.correctReferent) + "\"."
                 else:
                     msg = "\"" + str(self.correctReferent) + "\" was correct! Well done!\n"
+                    Glbls.last_feedback = None
             else:
                 if self.role == "speaker":
                     msg = "They got it wrong! They picked \"" + str(self.listener_pic_for_displaying) + "\" instead of \"" + str(self.correctReferent) + "\".\n"
+                    Glbls.last_feedback = "In the last round your partner incorrectly picked \"" + str(self.listener_pic_for_displaying) + "\" instead of \"" + str(self.correctReferent) + "\"."
                 else:
                     msg = "You got it wrong! The correct answer was \"" + str(self.correctReferent) + "\"." + " However, you picked \"" + str(self.listener_pic_for_displaying) + "\".\n"
+                    Glbls.last_feedback = None
 
         dummy_panel_1 = DummyPanel(self)
 
@@ -458,6 +475,9 @@ class GuiWindow(wx.Frame):
         self.main_ver_sizer.Add(dummy_panel_1, 1, wx.ALIGN_CENTER)
         self.main_ver_sizer.Add(listener_panel, 0, wx.ALIGN_CENTER)
         self.main_ver_sizer.Add(dummy_panel_2, 1, wx.ALIGN_CENTER)
+        
+
+
 
         self.SetSizer(self.main_ver_sizer)
         self.Layout()
@@ -466,7 +486,10 @@ class GuiWindow(wx.Frame):
     def result_stage(self):
         """Display last message and give opportunity to close frame."""
         self.stage = "game over"
-        percentage_score = str(int(round((float(self.score)/float(self.round_counter))*100)))+"%"
+        if Glbls.round_counter > 0 and Glbls.score > 0:
+            percentage_score = str(int(round((float(Glbls.score)/float(Glbls.round_counter))*100)))+"%"
+        else: 
+            percentage_score = "0%"
         msg = "Your final score is %s\nThank you for participating!" % percentage_score
         dummy_panel_1 = DummyPanel(self)
         message_panel = MessagePanel(self, msg, "close")
@@ -497,15 +520,18 @@ class GuiWindow(wx.Frame):
 
         if self.ready == 1:
             if self.stage == "instructions":
-                msg = """Thank you!\n\nThe practice rounds will start\n\nwhen all participants are ready."""
+                msg = """Thank you!\n\nThe practice rounds will start when all participants are ready."""
 
                 dummy_panel_1 = DummyPanel(self)
                 message_panel = MessagePanel(self, msg)
                 dummy_panel_2 = DummyPanel(self)
 
+
                 self.main_ver_sizer.Add(dummy_panel_1, 1, wx.ALIGN_CENTER)
                 self.main_ver_sizer.Add(message_panel, 0, wx.ALIGN_CENTER)
                 self.main_ver_sizer.Add(dummy_panel_2, 1, wx.ALIGN_CENTER)
+
+                
 
                 self.SetSizer(self.main_ver_sizer)
                 self.Layout()
@@ -541,6 +567,8 @@ class GuiWindow(wx.Frame):
 
             elif self.stage == "practice over":
                 Glbls.practice_over = True
+                Glbls.score = 0
+                Glbls.round_counter = 0
                 msg = """The practice rounds are now completed.\n\nIf you have questions,
 please ask the experimenter.\n\nThe experiment will begin when everyone is ready."""
 
@@ -567,7 +595,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
 
 
             elif self.submitted_message["msg"] == "submit score":
-                msg_to_send = ujson.dumps({"msg":"score","score":self.score})
+                msg_to_send = ujson.dumps({"msg":"score","score":Glbls.score})
                 encoded_message = self.encode_msg(msg_to_send)
                 self.srvsock.send(encoded_message)
 
@@ -832,6 +860,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
             self.image_path = loaded_msg["image path"]
             self.ClickThreshold = loaded_msg["num clicks"]
             Glbls.roundLength = loaded_msg["time per round"]
+            Glbls.maxRoundLength = Glbls.roundLength
             Glbls.minRoundLength = loaded_msg["min time per round"]
             Glbls.reduceRoundTime = loaded_msg["reduce round time"]
             Glbls.roundTimeReduction = loaded_msg["round time reduction"]
@@ -919,8 +948,8 @@ class QuestionnairePage(wx.Panel):
         """Initialise panel."""
         # variables for survey
         self.all_survey_questions = []
-        self.survey_dict = {"Languages spoken": "",
-                            "Favorite Pokemon": ""}
+        self.survey_dict = {"Age": "",
+                            "Handedness": ""}
         self.survey_answer_boxes = {}
 
         # initialise panel
@@ -934,7 +963,7 @@ class QuestionnairePage(wx.Panel):
 
         self.warning_pos = 0
         self.error_message = wx.StaticText(self, wx.ID_ANY, "")
-        self.error_message.SetFont(wx.Font(10, wx.DEFAULT,
+        self.error_message.SetFont(wx.Font(14, wx.DEFAULT,
                                    wx.NORMAL, wx.BOLD))
         self.error_message.SetForegroundColour(wx.RED)
 
@@ -953,14 +982,14 @@ class QuestionnairePage(wx.Panel):
         text_1 = "Please begin by answering the following questions.\n\n"
 
         start_text = wx.StaticText(self, label=text_1)
-        start_text.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
+        start_text.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL,
                                    wx.BOLD))
         self.all_survey_questions.append(start_text)
 
         # question 1
-        question_1_text = "\n1. Languages spoken\n"
+        question_1_text = "\n1. Age\n"
         question_1 = wx.StaticText(self, label=question_1_text)
-        question_1.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,
+        question_1.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
                                    wx.NORMAL))
         self.all_survey_questions.append(question_1)
 
@@ -968,12 +997,12 @@ class QuestionnairePage(wx.Panel):
         language_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(150, 30),
                                 style=wx.TE_MULTILINE)
         self.all_survey_questions.append(language_box)
-        self.survey_answer_boxes["Languages spoken"] = language_box
+        self.survey_answer_boxes["Age"] = language_box
 
         # question 2
-        question_2_text = "\n2. Favourite Pokemon\n"
+        question_2_text = "\n2. Handedness\n"
         question_2 = wx.StaticText(self, label=question_2_text)
-        question_2.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,
+        question_2.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
                                    wx.NORMAL))
         self.all_survey_questions.append(question_2)
 
@@ -981,7 +1010,7 @@ class QuestionnairePage(wx.Panel):
         study_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(150, 30),
                                 style=wx.TE_MULTILINE)
         self.all_survey_questions.append(study_box)
-        self.survey_answer_boxes["Favourite Pokemon"] = study_box
+        self.survey_answer_boxes["Handedness"] = study_box
 
         dummy_1 = wx.StaticText(self, label="")
 
@@ -1032,17 +1061,17 @@ class QuestionnairePage(wx.Panel):
         """Get answers of questionnaire."""
         # get answers from survey questions
         # question 3, 4
-        study = self.on_survey_text_box("Favourite Pokemon")
+        study = self.on_survey_text_box("Handedness")
         if study == "":
-            self.survey_dict["Favourite Pokemon"] = "none given"
+            self.survey_dict["Handedness"] = "none given"
         else:
-            self.survey_dict["Favourite Pokemon"] = self.on_survey_text_box("Favourite Pokemon")
+            self.survey_dict["Handedness"] = self.on_survey_text_box("Handedness")
 
-        language = self.on_survey_text_box("Languages spoken")
+        language = self.on_survey_text_box("Age")
         #if language == "":
         #    if not self.error_message_show:
 
-        #        warning = """Please supply your Languages spoken."""
+        #        warning = """Please supply your Age."""
         #        self.add_warning(warning)
         #        self.error_message_show = True
 
@@ -1050,9 +1079,9 @@ class QuestionnairePage(wx.Panel):
         #else:
         if 1 == 1: # <--delete this line if block above is reinstated
             if language == "":
-                self.survey_dict["Languages spoken"] = "none given"
+                self.survey_dict["Age"] = "none given"
             else:
-                self.survey_dict["Languages spoken"] = self.on_survey_text_box("Languages spoken")
+                self.survey_dict["Age"] = self.on_survey_text_box("Age")
 
             answers = []
             for qu, answ in self.survey_dict.items():
@@ -1094,13 +1123,13 @@ class WelcomePage(wx.Panel):
 
         welcome = wx.StaticText(self, label=welcome_text)
 
-        welcome.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
+        welcome.SetFont(wx.Font(18, wx.DEFAULT, wx.NORMAL,
                                 wx.BOLD))
         welcome.Show()
 
         introduction = wx.StaticText(self, label=introduction_text)
 
-        introduction.SetFont(wx.Font(11, wx.DEFAULT, wx.NORMAL,
+        introduction.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL,
                              wx.NORMAL))
         introduction.Show()
 
@@ -1199,8 +1228,27 @@ class ListenerButtonsPanel(wx.Panel):
                 if [m,n] in grid_coords:
                     self.grid.SetCellBackgroundColour(m, n, wx.BLACK)
 
-        self.message_sizer.Add(wx.StaticText(self, label = "Time to guess!  Your partner has sent you the following grid image:  "), 0)
+        time2guess_msg = wx.StaticText(self, label = "Time to guess!  Your partner has sent you the following grid image:  ")
+        time2guess_msg.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
+
+        if Glbls.displayScore == True and Glbls.practice_over == True:
+            if Glbls.round_counter > 0 and Glbls.score > 0:
+                current_percentage = str(int(round((float(Glbls.score)/float(Glbls.round_counter))*100)))      
+            else:
+                current_percentage = "0"
+            # score_text = "Current score: " + str(Glbls.score) + " (" + current_percentage + "%)"
+            score_text = "  (Current score: " + current_percentage + "%)"
+            Glbls.score_display = wx.StaticText(self, label= score_text)
+            Glbls.score_display.SetFont(wx.Font(16.0, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
+
+
+        
+
+        self.message_sizer.Add(time2guess_msg, 0)
         self.message_sizer.Add(self.grid, 0)
+        if Glbls.displayScore == True and Glbls.practice_over == True:
+            self.message_sizer.Add(Glbls.score_display,0)
+
         self.box_sizer.Add(self.message_sizer, 0)
 
     # Not used anymore
@@ -1260,7 +1308,7 @@ class ListenerButtonsPanel(wx.Panel):
 
         for i in range(len(self.gui.referent_list)):
             self.radioButtonList.append(wx.RadioButton(self, wx.ID_ANY, label=self.gui.referent_list[i],style=wx.RB_GROUP))
-            self.radioButtonList[i].SetFont(wx.Font(10.0, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
+            self.radioButtonList[i].SetFont(wx.Font(14.0, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
 
         print("referent_list in radio_box", self.gui.referent_list)
         # print("labels in radioButtonList") #figure out a way
@@ -1523,6 +1571,16 @@ class DrawingPage(wx.Panel):
         if Glbls.timeRounds == True and Glbls.displayTimer == True:
             self.timer_display = wx.StaticText(self, label="\nYou have %s seconds from your first click!" % str(self.remaining))
             self.timer_display.SetFont(wx.Font(16.0, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
+        if Glbls.displayScore == True and Glbls.practice_over == True:
+            if Glbls.round_counter > 0 and Glbls.score > 0:
+                current_percentage = str(round((float(Glbls.score)/float(Glbls.round_counter))*100))      
+            else:
+                current_percentage = "0"
+            # score_text = "Current score: " + str(Glbls.score) + " (" + current_percentage + "%)"
+            score_text = "Current score: " + current_percentage + "%"
+            Glbls.score_display = wx.StaticText(self, label= score_text)
+            Glbls.score_display.SetFont(wx.Font(16.0, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
+
 
         self.clicked = False
         self.CanClick = True
@@ -1584,6 +1642,11 @@ class DrawingPage(wx.Panel):
 
         # Add submit button
         self.add_submit_button("Send")
+
+        if Glbls.displayScore == True and Glbls.practice_over == True:
+            self.dummy_text2 = wx.StaticText(self, label="")
+            self.left_ver_box_sizer.Add(self.dummy_text2,1)
+            self.ver_box_sizer.Add(Glbls.score_display, 0)
 
         # Then we call CreateGrid to set the dimensions of the grid
         self.grid.CreateGrid(self.gui.GridWidth, self.gui.GridHeight)
@@ -1816,7 +1879,7 @@ class MessagePanel(wx.Panel):
         self.gui = parent
 
         message = wx.StaticText(self, label=msg)
-        message.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
+        message.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL,
                                 wx.BOLD))
         message.Show()
         self.box_sizer.Add(message, 0)
@@ -1880,12 +1943,14 @@ class InstructionsPage(wx.Panel):
 Do not hesitate to ask the researcher any questions you have.\n"""
         instruct = wx.StaticText(self, label=message)
 
-        instruct.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
+        instruct.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL,
                                  wx.BOLD))
         instruct.Show()
 
         with codecs.open(self.gui.instructions_file, "r", "utf-8") as read_handle:
             instructions = read_handle.read()
+
+        instructions_text = instructions.format(Glbls.maxRoundLength,Glbls.minRoundLength)
 
         # Insert parameters into speaker instructions
         # print("click threshold", self.gui.ClickThreshold)
@@ -1894,13 +1959,14 @@ Do not hesitate to ask the researcher any questions you have.\n"""
 
         instruction_display = rt.RichTextCtrl(self, id=wx.ID_ANY,
                                               style=wx.TE_READONLY,
-                                              size=(400, 350))
+                                              size=(600, 500))
         instruction_display.BeginBold()
         instruction_display.WriteText("Instructions")
         instruction_display.WriteText("\n\n\n")
         instruction_display.EndBold()
-        instruction_display.WriteText(instructions)
-        instruction_display.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
+
+        instruction_display.WriteText(instructions_text)
+        instruction_display.SetFont(wx.Font(16, wx.DEFAULT, wx.NORMAL,
                                     wx.NORMAL))
         instruction_display.Show()
 

@@ -1,0 +1,12 @@
+Referent list:
+['Dog', 'Pet', 'Animal', 'Ice cream', 'Dessert', 'Daisy', 'Flower', 'Plant', 'Apple', 'Fruit', 'Book', 'Novel']
+Condition:
+{'substitute': True, 'noise': (0.2, 0.25)}
+Substitution parameters:
+{'max_unique': 1, 'num_substitutions': 1, 'min_interval': 1, 'threshold': 0.75, 'num_previous_instances': 4, 'substitution_noise_combine': False}
+Time per round:
+40
+Sep_20_22-14_43_53 | {"msg":"info","name":"c"}
+Sep_20_22-14_44_03 | {"msg":"info","name":"fds"}
+Sep_20_22-14_44_05 | {"msg":"survey completed","name":"fds","survey answers":"Age: none given, Handedness: none given"}
+Sep_20_22-14_44_09 | {"msg":"survey completed","name":"c","survey answers":"Age: none given, Handedness: none given"}
