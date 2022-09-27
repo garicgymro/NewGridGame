@@ -258,6 +258,7 @@ class GuiWindow(wx.Frame):
         return((newwidth, newheight))
 
     def welcome_stage(self):
+        # print("In welcome_stage as",str(self.role))
         """The first page of the experiment -- welcomes participant."""
         dummy_panel_1 = DummyPanel(self)
         dummy_panel_1.SetBackgroundColour("RED")
@@ -274,6 +275,7 @@ class GuiWindow(wx.Frame):
         self.Show()
 
     def survey_stage(self):
+        # print("In survey_stage as",str(self.role))
         """The questionnaire stage."""
         self.stage = "survey"
         dummy_panel_1 = DummyPanel(self)
@@ -288,6 +290,7 @@ class GuiWindow(wx.Frame):
         self.Layout()
 
     def instruction_stage(self):
+        # print("In instruction_stage as",str(self.role))
         """Display a page with instructions."""
         self.stage = "instructions"
 
@@ -303,8 +306,10 @@ class GuiWindow(wx.Frame):
         self.Layout()
 
     def speaker_buttons_stage(self):
+        # print("In speaker_buttons_stage as",str(self.role))
         """Create a speaker panel for displaying the image.  (NOT IN USE)"""
         self.role = "speaker"
+        # print("Now in speaker_buttons_stage as",str(self.role))
         dummy_panel_1 = DummyPanel(self)
         speaker_panel = SpeakerButtonsPanel(self)
         dummy_panel_2 = DummyPanel(self)
@@ -319,8 +324,9 @@ class GuiWindow(wx.Frame):
 
     def speaker_draw_stage(self):
         """Stage were speaker has to 'draw' the line on the grid."""
-        print("In speaker_draw_stage")
+        # print("In speaker_draw_stage as",str(self.role))
         self.role = "speaker"
+        # print("Now in speaker_draw_stage as",str(self.role))
         # self.speaker_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         dummy_panel_1 = DummyPanel(self)
@@ -342,9 +348,11 @@ class GuiWindow(wx.Frame):
 
 
     def listener_idle_stage(self):
+        # print("in listener idle stage as",str(self.role))
         """Display a temporary message for the listener."""
         # assign role to client
         self.role = "listener"
+        # print("now in listener idle stage as",str(self.role))
         # print("In listener_idle_stage")
 
         msg = "You are waiting on a message from your partner."
@@ -365,6 +373,7 @@ class GuiWindow(wx.Frame):
         self.elements_in_sizer.append(message_panel)
 
     def speaker_idle_stage(self,coords):
+        # print("in speaker idle stage as",str(self.role))
         """Display a temporary message for the listener."""
         
 
@@ -394,6 +403,7 @@ class GuiWindow(wx.Frame):
         self.elements_in_sizer.append(feedback_panel)
 
     def round_feedback_stage(self):
+        # print("in round feedback stage as",str(self.role))
         """Display the picture chosen by each player."""
         # print("**in round_feedback_stage**")
         # print("role of client: ", self.role)
@@ -443,6 +453,7 @@ class GuiWindow(wx.Frame):
 
         if self.role == "listener":
             if self.swap:
+                # print("swapping from listener to speaker")
                 self.role = "speaker"
                 self.submitted_message = {"msg":"next round"}
                 message_panel = MessagePanel(self, msg, "OK")
@@ -450,11 +461,14 @@ class GuiWindow(wx.Frame):
                 message_panel = MessagePanel(self,msg)
         elif self.role == "speaker":
             if self.swap:
+                # print("swapping from speaker to listener")
                 self.role = "listener"
                 message_panel = MessagePanel(self,msg)
             else:
                 self.submitted_message = {"msg":"next round"}
                 message_panel = MessagePanel(self, msg, "OK")
+        else:
+            print("not listener or speaker, but apparently", str(self.role))
 
         dummy_panel_2 = DummyPanel(self)
 
@@ -467,6 +481,7 @@ class GuiWindow(wx.Frame):
         self.elements_in_sizer.append(message_panel)
 
     def listener_choice_stage(self):
+        # print("in listener choice stage as",str(self.role))
         # Take a guess at what the speaker meant
         dummy_panel_1 = DummyPanel(self)
         listener_panel = ListenerButtonsPanel(self)
@@ -484,6 +499,7 @@ class GuiWindow(wx.Frame):
         self.elements_in_sizer.append(listener_panel)
 
     def result_stage(self):
+        # print("in result stage as",str(self.role))
         """Display last message and give opportunity to close frame."""
         self.stage = "game over"
         if Glbls.round_counter > 0 and Glbls.score > 0:
@@ -508,11 +524,11 @@ class GuiWindow(wx.Frame):
         """Encode a message for the sever."""
         encoded_item = item.encode("utf-8") + Glbls.server_end_marker.encode("utf-8")
         # encoded_item = item.encode() + self.server_end_marker.encode()
-        print("encoded item: ", encoded_item)
+        # print("encoded item: ", encoded_item)
         return(encoded_item)
 
     def submit_message(self):
-        print("submitted_message: ", self.submitted_message)
+        # print("\nsubmitted_message: ", self.submitted_message,"\n")
         """Send messages to server and/or go to another stage."""
         # remove all elements from the sizer to be able to establish
         # new items
@@ -607,6 +623,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
             elif self.role == "speaker":
 
                 if self.submitted_message["msg"] == "pic chosen": #(NOT IN USE)
+                    # print("\nsubmitted message is pic chosen\n")
 
                     msg_to_send = ujson.dumps({"msg":"pic","chosen pic":self.chosen_pic,"name":self.name})
                     encoded_message = self.encode_msg(msg_to_send)
@@ -614,11 +631,12 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
 
                 # elif type(self.submitted_message) == list:
                 elif self.submitted_message["msg"] == "coords":
+                    # print("\nsubmitted message is coords\n")
                     msg_to_send = ujson.dumps({"msg":"coords","coords":self.submitted_message["coords"],"name":self.name,"referent":self.referent_string})
                     # utterance = ("6666COORD" + str(self.submitted_message) + "@" +
                                 # self.name + "@" + self.referent_string + "@" + str(6666))
 
-                    print("speaker's correct answer: referent_string", self.referent_string)
+                    # print("speaker's correct answer: referent_string", self.referent_string)
                     encoded_message = self.encode_msg(msg_to_send)
                     self.srvsock.send(encoded_message)
 
@@ -626,10 +644,12 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                     self.speaker_buttons_stage()
 
                 else:
+                    # print("\nI dunno! I dunno! But I'm the speaker!",self.submitted_message("msg"),"\n")
                     pass
 
             elif self.role == "listener":
                 if self.submitted_message["msg"] == "listener pic chosen":
+                    # print("\nsubmitted message is listener pic chosen\n")
                     msg_to_send = ujson.dumps({"msg":"guess","listener chosen pic":self.listener_chosen_pic,"name":self.name,"correct referent":self.correctReferent})
                     # utterance = ("6666GUESS" + self.listener_chosen_pic + "@" + self.name + "@" +
                                  # self.correctReferent + "@" + str(6666))
@@ -638,10 +658,12 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                     self.srvsock.send(encoded_message)
 
                 elif self.submitted_message["msg"] == "listener still choosing":
+                    # print("\nsubmitted message is listener still choosing\n")
                     self.listener_choice_stage()
 
 
                 else:
+                    # print("\nI dunno! I dunno! But I'm the listener!",self.submitted_message("msg"),"\n")
                     pass
 
             elif self.stage == "game over":
@@ -667,7 +689,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
         :param message: the incoming message.
         :type message: str.
         """
-        # print("\n\n\nnew incoming message: ", message)
+        # print("\n\n\nnew incoming message: ", message,"\n")
         
         self.remove_elements_from_sizer()
 
@@ -678,12 +700,14 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
 
         # if re.match(self.srvr_msg, message):
         if msg_type == "kill":
+            # print("msgtype is kill")
             killmessage = ujson.dumps({"msg":"kill"})
             encoded_killmessage = self.encode_msg(killmessage)
             self.srvsock.send(encoded_killmessage)
             self.close_up()
 
         elif msg_type == "welcome":
+            # print("msg_type is welcome")
             self.randomization = loaded_msg["randomization"]
             self.hard_mode = loaded_msg["hard mode"]
             # self.randomization = (m.group(1).split("@")[0] == "True")
@@ -728,7 +752,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
             # Read in the referent list determined by the server
             self.referent_list = loaded_msg["reflist"]
             # self.referent_list = self.referent_list.split(", ")
-            print("referent_list sent directly from server", self.referent_list)
+            # print("referent_list sent directly from server", self.referent_list)
 
             if self.role == "speaker":
                 print("I AM IN PRACTICEROUND")
@@ -748,6 +772,8 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                 self.listener_idle_stage()
 
         elif msg_type == "proper round":
+            # print("msg type is proper round")
+            # print("stage: ",str(self.stage))
             self.stage = "game"
             # self.image_buttons_1 = additional_msg.split("=")[0]
             # self.image_buttons_2 = additional_msg.split("=")[1]
@@ -757,13 +783,13 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
             # Read in the referent list determined by the server
             self.referent_list = loaded_msg["reflist"]
             # self.referent_list = self.referent_list.split(", ")
-            if (self.role == "speaker" 
-                and (Glbls.reduceRoundTime == True 
+            if (self.role == "speaker"):
+                if (Glbls.reduceRoundTime == True 
                     and Glbls.roundLength > Glbls.minRoundLength
-                    and Glbls.practice_over == True)):
-                Glbls.roundLength -= Glbls.roundTimeReduction
+                    and Glbls.practice_over == True):
+                    Glbls.roundLength -= Glbls.roundTimeReduction
 
-                print("I AM IN PROPERROUND")
+                # print("I AM IN PROPERROUND as", str(self.role))
                 # image_string = "6666" + self.chosen_pic + "|||" + self.alt_pic + "6666"
                 # encoded_string = self.encode_msg(image_string)
                 # self.srvsock.send(encoded_string)
@@ -773,7 +799,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                 # #self.speaker_buttons_stage()
                 self.speaker_draw_stage()
             elif self.role == "listener":
-                print("I AM IN PROPERROUND")
+                # print("I AM IN PROPERROUND as", str(self.role))
                 self.listener_idle_stage()
 
         elif msg_type == "practice over":
@@ -817,21 +843,24 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
         #     self.pic_for_displaying = m.group(1)
 
         elif msg_type == "guess":
+            # print("msg type is guess")
             self.listener_pic_for_displaying = loaded_msg["guess"]
             self.round_feedback_stage()
 
         elif msg_type == "coords":
+            # print("msg type is coords")
 
             self.speaker_coords = loaded_msg["filled array"]
 
             self.correctReferent = loaded_msg["referent"]
-            print("correct referent (sent from speaker): ", self.correctReferent)
+            # print("correct referent (sent from speaker): ", self.correctReferent)
             if self.role == "listener":
                 self.listener_choice_stage()
             else:
                 self.speaker_idle_stage(coords=self.speaker_coords)
 
         elif msg_type == "only one player ready":
+            # print("msg type is only one plater ready")
             if self.stage != "game":
                 msg = """Waiting on the other player..."""
 
@@ -848,11 +877,13 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                 self.elements_in_sizer.append(message_panel)
 
         elif msg_type == "game over":
+            # print("msg type is game over")
             self.submitted_message = {"msg":"submit score"}
             self.submit_message()
             self.result_stage()
 
         elif msg_type == "begin":
+            # print("msg type is begin")
 
 
             # m is the string list, group() returns tuple of specified index?
@@ -902,6 +933,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
 
 
     def on_submit(self, event):
+        # print("\nHello! I'm submitting with on_submit.\n")
         """Send a submit message."""
         self.submit_message()
 
@@ -912,10 +944,10 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
         srvsock.connect((self.host.strip(), self.port))
         # participant_info = "6666INFO" + self.name + "6666"
         msg_to_send = ujson.dumps({"msg":"info","name":self.name})
-        print("sending info message!")
+        # print("sending info message!")
         encoded_info = self.encode_msg(msg_to_send)
         srvsock.send(encoded_info)
-        print("info message sent!")
+        # print("info message sent!")
 
     def close_up(self):
         """Close everything."""
@@ -987,30 +1019,30 @@ class QuestionnairePage(wx.Panel):
         self.all_survey_questions.append(start_text)
 
         # question 1
-        question_1_text = "\n1. Age\n"
+        question_1_text = "\nHow old are you?\n"
         question_1 = wx.StaticText(self, label=question_1_text)
         question_1.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
                                    wx.NORMAL))
         self.all_survey_questions.append(question_1)
 
         # answer 1
-        language_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(150, 30),
+        age_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(150, 30),
                                 style=wx.TE_MULTILINE)
-        self.all_survey_questions.append(language_box)
-        self.survey_answer_boxes["Age"] = language_box
+        self.all_survey_questions.append(age_box)
+        self.survey_answer_boxes["Age"] = age_box
 
         # question 2
-        question_2_text = "\n2. Handedness\n"
+        question_2_text = "\nAre you right- or left-handed (or ambidextrous)?\n"
         question_2 = wx.StaticText(self, label=question_2_text)
         question_2.SetFont(wx.Font(14, wx.DEFAULT, wx.NORMAL,
                                    wx.NORMAL))
         self.all_survey_questions.append(question_2)
 
         # answer 2
-        study_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(150, 30),
+        handedness_box = wx.TextCtrl(self, id=wx.ID_ANY, size=(150, 30),
                                 style=wx.TE_MULTILINE)
-        self.all_survey_questions.append(study_box)
-        self.survey_answer_boxes["Handedness"] = study_box
+        self.all_survey_questions.append(handedness_box)
+        self.survey_answer_boxes["Handedness"] = handedness_box
 
         dummy_1 = wx.StaticText(self, label="")
 
@@ -1018,10 +1050,10 @@ class QuestionnairePage(wx.Panel):
         # add all items to the sizer
         self.box_sizer.Add(start_text, 0)
         self.box_sizer.Add(question_1, 0)
-        self.box_sizer.Add(language_box, 0)
+        self.box_sizer.Add(age_box, 0)
         self.box_sizer.Add(dummy_1, 0)
         self.box_sizer.Add(question_2, 0)
-        self.box_sizer.Add(study_box, 0)
+        self.box_sizer.Add(handedness_box, 0)
 
         for question in self.all_survey_questions:
             question.Show()
@@ -1310,17 +1342,17 @@ class ListenerButtonsPanel(wx.Panel):
             self.radioButtonList.append(wx.RadioButton(self, wx.ID_ANY, label=self.gui.referent_list[i],style=wx.RB_GROUP))
             self.radioButtonList[i].SetFont(wx.Font(14.0, wx.DEFAULT, wx.NORMAL,wx.NORMAL))
 
-        print("referent_list in radio_box", self.gui.referent_list)
+        # print("referent_list in radio_box", self.gui.referent_list)
         # print("labels in radioButtonList") #figure out a way
-        print("size of radioButtonList", len(self.radioButtonList))
+        # print("size of radioButtonList", len(self.radioButtonList))
 
         labelList = []
         for i in range(len(self.radioButtonList)):
-            print("in GetLabel loop",i)
-            print("getLabel", self.radioButtonList[i].GetLabel())
+            # print("in GetLabel loop",i)
+            # print("getLabel", self.radioButtonList[i].GetLabel())
             labelList.append(self.radioButtonList[i].GetLabel())
 
-        print("labels of elements in radioButtonList", labelList)
+        # print("labels of elements in radioButtonList", labelList)
 
         # OLD CODE
         # self.radio_1 = wx.RadioButton(self, wx.ID_ANY, label="Dog",
@@ -1343,7 +1375,7 @@ class ListenerButtonsPanel(wx.Panel):
             if rb != thisrb:
                 rb.SetValue(False)
         self.gui.currentGuess = thisrb.GetLabel()
-        print(thisrb.GetLabel(), ' is clicked from Radio Group')
+        # print(thisrb.GetLabel(), ' is clicked from Radio Group')
 
     def add_submit_button(self, label):
         """Add a submit button. Its position is set.
@@ -1372,7 +1404,7 @@ class ListenerButtonsPanel(wx.Panel):
             if i.GetValue():
                 self.gui.listener_chosen_pic = self.gui.currentGuess
 
-                print("radioButton val", self.gui.listener_chosen_pic)
+                # print("radioButton val", self.gui.listener_chosen_pic)
                 self.Hide()
                 self.gui.submit_message()
 
@@ -1498,7 +1530,7 @@ class FeedbackPage(wx.Panel):
 
 
 
-        print("Creating feedback grid...")
+        # print("Creating feedback grid...")
         # if (self.drawnFeedbackGrid == True):
         #     print("Feedback grid drawn at least once")
         #     pass
@@ -1886,8 +1918,10 @@ class MessagePanel(wx.Panel):
         self.gui.elements_in_sizer.append(message)
 
         if label == "OK":
+            # print("Messaga panel! Label is ok!")
             self.add_submit_button(label)
         if label == "close":
+            # print("Messaga panel! Label is close!")
             self.add_close_button("Close")
 
         self.SetSizer(self.box_sizer)
@@ -1896,6 +1930,7 @@ class MessagePanel(wx.Panel):
         self.Center()
 
     def add_submit_button(self, label):
+        # print("Adding a submit button to Message panel. Label is", str(label))
         """Add a submit button. Its position is set.
 
         :param label: the text written on the button.
@@ -1912,6 +1947,7 @@ class MessagePanel(wx.Panel):
         self.gui.elements_in_sizer.append(submit_button)
 
     def add_close_button(self, label):
+        # print("Adding a close button to Message panel. Label is", str(label))
         """Add the button for closing everything."""
         submit_button = wx.Button(self, id=wx.ID_ANY,
                                   label=label,
@@ -2038,7 +2074,6 @@ class Reader(threading.Thread):
             raw_data = the_socket.recv(self.gui.bufsize)
             # print "rawdata = ", raw_data
             data = self.decode_strings(raw_data)
-            # print "data = ", data
             if end in data:
                 total_data.append(data[:data.find(end)])
                 messages.append(total_data)
@@ -2075,7 +2110,7 @@ class Reader(threading.Thread):
         for msg in messages:
             messages2return.append(''.join(msg))
 
-
+        # print("incoming messages",messages2return)
         return(messages2return)
 
     def run(self):

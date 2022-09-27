@@ -76,9 +76,6 @@ class Glbls():
 
 
 
-
-
-
     # USED FOR TESTING referent lists, complexity substitution -
     # uncomment all instance of testRefList to insert your own list of referents
     # totalRefList = ["Dog", "Dog", "Dog", "Dog",
@@ -101,10 +98,11 @@ class Glbls():
 
     conditions = [{"substitute":True,"noise": None}, 
     {"substitute":True,"noise": (0.2, 0.25)},  #Reduce this?
-    {"substitute":True,"noise": (0.2, 0.25)}
+    {"substitute":True,"noise": (0.2, 0.25)},
+    {"substitute":False,"noise": None}
     ]
 
-    condition_index = 1
+    condition_index = 3
 
     #First noise threshold now controle whether noise occurs in a given round
     #Second threshold applies per cell
@@ -153,6 +151,7 @@ class Glbls():
     num_clicks = None 
     images_path = None
     swapping = None
+    num_rounds = 150
 
 
 class Player():
@@ -256,7 +255,7 @@ class Gui(wx.Frame):
         f.write("\n")
         f.close()
         
-        self.num_of_rounds = 40 #= len(self.parameters_for_proper_rounds)
+        # self.num_of_rounds = 150 #= len(self.parameters_for_proper_rounds)
 
         # change this if you want 2 or 4 participants
         if self.nclnts == 2:
@@ -591,7 +590,7 @@ class Gui(wx.Frame):
         # starting proper rounds
         if self.paused == 0 and self.practice_over == 1:
             print("IN PROPER ROUNDS")
-            if self.round < self.num_of_rounds:
+            if self.round < Glbls.num_rounds:
                 print("\n\n\nFINISHED ROUND" + str(self.round) + "\n\n\n")
                 if self.round > 0:
                     m = "Round " + str(self.round) + " finished.\n"
