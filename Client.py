@@ -67,6 +67,7 @@ class Glbls():
 
 
 
+
 class GuiWindow(wx.Frame):
     """Construct the window(s) the participants of the experiment see."""
     def __init__(self, parent, id, title, host, name):
@@ -499,6 +500,7 @@ class GuiWindow(wx.Frame):
         self.elements_in_sizer.append(listener_panel)
 
     def result_stage(self):
+        print("In final result stage")
         # print("in result stage as",str(self.role))
         """Display last message and give opportunity to close frame."""
         self.stage = "game over"
@@ -632,6 +634,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                 # elif type(self.submitted_message) == list:
                 elif self.submitted_message["msg"] == "coords":
                     # print("\nsubmitted message is coords\n")
+                    print(self.submitted_message["coords"])
                     msg_to_send = ujson.dumps({"msg":"coords","coords":self.submitted_message["coords"],"name":self.name,"referent":self.referent_string})
                     # utterance = ("6666COORD" + str(self.submitted_message) + "@" +
                                 # self.name + "@" + self.referent_string + "@" + str(6666))
@@ -665,14 +668,16 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                 else:
                     # print("\nI dunno! I dunno! But I'm the listener!",self.submitted_message("msg"),"\n")
                     pass
-
-            elif self.stage == "game over":
+            print(self.stage)
+            if self.stage == "game over":
+                print("game over! About to send closed message" )
                 msg_to_send = ujson.dumps({"msg":"closed"})
                 encoded_message = self.encode_msg(msg_to_send)
                 self.srvsock.send(encoded_message)
-
                 self.Destroy()
                 sys.exit()
+            else:
+                pass
 
         else:
             # TODO: throw exception
@@ -877,7 +882,7 @@ please ask the experimenter.\n\nThe experiment will begin when everyone is ready
                 self.elements_in_sizer.append(message_panel)
 
         elif msg_type == "game over":
-            # print("msg type is game over")
+            print("msg type is game over")
             self.submitted_message = {"msg":"submit score"}
             self.submit_message()
             self.result_stage()

@@ -152,6 +152,7 @@ class Glbls():
     images_path = None
     swapping = None
     num_rounds = 150
+    num_practice_rounds = 4
 
 
 class Player():
@@ -213,7 +214,7 @@ class Gui(wx.Frame):
         Glbls.images_path = images_path
 
         # self.num_practice_rounds = len(practice_rounds_config)
-        self.num_practice_rounds = 4
+        # self.num_practice_rounds = 4
         self.practice_rounds_config = practice_rounds_config
         self.current_practice_config = {}
         # This must be the same as in the Server script
@@ -351,7 +352,7 @@ class Gui(wx.Frame):
 
     def final_results_read(self):
         """..."""
-        print("all clients closed")
+        print("all clients closed...")
         self.finish = 1
         msg = "Closing at Server end"
         pub.sendMessage("serverclosed", data=msg)
@@ -556,11 +557,18 @@ class Gui(wx.Frame):
         self.on_new_round()
 
     def finish_game(self):
+        print("Finishing game...")
         """..."""
         for player in self.playerlist:
             message = ujson.dumps({"msg":"game over"})
             encoded_message = self.encode(message)
             player.clnt.send(encoded_message)
+        print("writing final results...")
+        final_data = "\n\nFull message dictionary:\n"
+        final_data += str(Glbls.full_message_dictionary)
+
+        self.write_message_to_file(final_data)
+        print("final results written")
 
     def practice_rounds_over(self):
         """..."""
@@ -625,7 +633,7 @@ class Gui(wx.Frame):
         elif self.paused == 0 and self.practice_over == 0:
             print("IN PRACTICE ROUNDS")
             self.practice_round += 1
-            if self.practice_round > self.num_practice_rounds:
+            if self.practice_round > Glbls.num_practice_rounds:
                 self.practice_rounds_over()
             else:
                 # image_pair = [
@@ -977,9 +985,11 @@ class Srvr(threading.Thread):
                 #         wx.CallAfter(self.gui.on_new_round)
 
                 elif msg_type == "closed":
+                    print("received closed message from",str(self.player))
                     self.gui.clients_closed.append(self.player)
 
                     if len(self.gui.clients_closed) == len(self.gui.playerlist):
+                        print("Both clients closed")
                         wx.CallAfter(self.gui.final_results_read)
 
                 elif msg_type == "info":
@@ -1277,7 +1287,7 @@ class Srvr(threading.Thread):
                 elif self.data == '/showserver' and self.gui.gui_show == 0:
                     wx.CallAfter(self.gui.on_reveal)
                 else:
-                    print("miscellaneous data: ", self.data)
+                    # print("miscellaneous data: ", self.data)
                     pass
 
                 Srvr.dlock.release()
