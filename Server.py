@@ -33,6 +33,7 @@ import ast
 import ujson
 
 from parameter_reader import Parameters
+import numpy as np
 
 try:
     import wx
@@ -102,7 +103,7 @@ class Glbls():
     {"substitute":False,"noise": None}
     ]
 
-    condition_index = 3
+    condition_index = 0
 
     #First noise threshold now controle whether noise occurs in a given round
     #Second threshold applies per cell
@@ -134,10 +135,11 @@ class Glbls():
     # minimum interval between substitutions.
     # substitutionParam = [1, 1, 1]c
     #Better as a dictionary!
-    substitutionParam = {"max_unique":1, "num_substitutions":1, "min_interval":1,"threshold":0.75, "num_previous_instances":4,"substitution_noise_combine":False}
+    substitutionParam = {"max_unique":1, "num_substitutions":3, "min_interval":1,"threshold":0.75, "num_previous_instances":4,"substitution_noise_combine":False}
 
     #tells us what referents have been signaled and which substitutions have been made
     complexityTracker = {}
+    complexitySuitabilityTracker = {}
 
     # substitution_noise_combine = False #Can noise apply on rounds where 
     substitution_round = False
@@ -1119,6 +1121,8 @@ class Srvr(threading.Thread):
                         Glbls.full_message_dictionary[str(self.player)][Glbls.referent].append(single_message_dict)
                     else:
                         Glbls.full_message_dictionary[str(self.player)][Glbls.referent] = [single_message_dict]
+                    # self.updateComplexitySuitability(player=self.player,referent=Glbls.referent)
+
 
             
 
@@ -1452,6 +1456,38 @@ class Srvr(threading.Thread):
 
         return mostComplexCoords
         # pass
+
+
+
+
+    def updateComplexitySuitability(self,player,referent):
+        signalList = Glbls.full_message_dictionary[player][referent]  
+        if len(signalList) < Glbls.substitutionParam["num_previous_instances"]:
+            pass 
+        else:
+            if len(signalList) < 3:
+                latest_complexity = signalList[-1:]["complexity"]
+            else:
+                final = signalList[len(signalList)-1]
+                penultimate = signalList[len(signalList)-2]
+                latest_complexity = np.mean([final["complexity"],penultimate["complexity"]])
+            newList = sorted(targetList, key=lambda d: d["complexity"],reverse=True)
+            highest_complexity = newList[0]['complexity']            
+            difference = highest_complexity-latest_complexity
+
+            if player in Glbls.complexitySuitabilityTracker.keys():
+                Glbls.complexitySuitabilityTracker[player][referent] = difference
+            else:
+                Glbls.complexitySuitabilityTracker[player] = {referent:difference}
+
+
+
+
+
+
+
+
+
 
     # Complexity tracker tracks the substituted referents, time from last use,
     def complexitySubstitution(self, filledArr,player):

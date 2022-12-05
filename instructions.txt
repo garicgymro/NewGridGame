@@ -2,12 +2,14 @@ In this game, you and your partner will be playing a communication game.
 
 There are two roles to this game: a Sender and a Receiver. You will take turns in these roles.
 
-You're going to be communicating about a set of words, which will be shown, on the left of the screen. Before beginning you should read through the words a couple of times, as this may help you succeed in the game.
+You're going to be communicating about a set of words, which will be shown on the left of the screen. Before beginning you should read through the words a couple of times, as this may help you succeed in the game. 
 
-When you are the Sender, you will be given one of the words to communicate. You will also see a 12x12 grid. You will use the computer mouse to select squares in the grid in order to communicate the intended word to your partner, the Receiver. To unselect a square, just click that square again. A timer in the bottom of the screen will start as soon as you make your first click in the grid. You can send your grid before the timer runs out, but once the timer runs out, the grid will send as is. Note that, at the start of the game the Sender will have {} seconds. As the game progresses, however, the total amount of time available in every round will decrease until it reaches {} seconds.
+When you are the Sender, you will be given one of the words to communicate. You will also see a 12x12 grid. You will use the computer mouse to select squares in the grid in order to communicate the intended word to your partner, the Receiver. In doing so, you may not use the grid to write letters or words, but otherwise you can select squares in the grid as you wish To unselect a square, just click that square again. A timer in the bottom of the screen will start as soon as you make your first click in the grid. You can send your grid before the timer runs out, but once the timer runs out, the grid will send as is. Note that, at the start of the game the Sender will have {} seconds. As the game progresses, however, the total amount of time available in every round will decrease until it reaches {} seconds. 
+
+IMPORTANT REMINDER: The Sender may not communicate using any words or letters of the alphabet. This is against the rules.
 
 When you are the Receiver, you will be sent the Sender’s grid with the cells they selected. This will display on the right hand side of the screen. On the left, you'll be able to choose from the full list of words to guess which one the Sender was trying to communicate to you. Simply select the word you think they’re communicating and click “OK”.  Both you and the Sender will be notified whether you selected the correct word or not.
 
-There is a possibility of noise in some rounds of the game, meaning that there is some chance that some of the cells in the grid that the Sender selects will not make it to the Receiver. Both you and your partner will be able to see when this happens, as the screen will show what signal the Receiver actually saw.
+There is a possibility of noise in some rounds of the game, meaning that there is some chance that some of the cells in the grid that the Sender selects will not make it to the Receiver. Both you and your partner will be able to see when this has happened, as the screen will show what signal the Receiver actually saw.
 
 There will be four practice rounds at the beginning of the game so you and your partner can get used to how it works.
